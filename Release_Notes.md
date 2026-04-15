@@ -17,6 +17,25 @@ This driver is composed of the radio driver and radio interface under "stm32_rad
 
 # Update History
 
+<label for="collapse-section4" aria-hidden="true">__V1.3.0 / 21-Oct-2022__</label>
+<div>
+
+## Main Changes
+
+- Feature: 169MHz validation support
+- Feature: Add LoRa-E support (LR-FHSS)
+- Feature: RF output optimization
+- Chore: Sync Word register addresses not matching Semtech SX1261/2 datasheet
+- Fix: SUBGHz GCFO registers not in line with the RM
+- Fix: AGC of radio stuck when jammed
+- Release Notes update
+
+## Known limitations:
+
+None
+
+</div>
+
 <label for="collapse-section3" aria-hidden="true">__V1.2.0 / 14-Dec-2021__</label>
 <div>
 
