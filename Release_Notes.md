@@ -2,7 +2,7 @@
 
 # Release Notes for
 # <mark>STM32WLxx SubGHz Physical Layer Middleware</mark>
-Copyright &copy; 2021 STMicroelectronics\
+Copyright &copy; 2025 STMicroelectronics\
 
 [![ST logo](_htmresc/st_logo_2020.png)](https://www.st.com)
 
@@ -16,6 +16,40 @@ This driver is composed of the radio driver and radio interface under "stm32_rad
 
 
 # Update History
+
+<label for="collapse-section6" aria-hidden="true">__V1.4.0 / 19-Dec-2025__</label>
+<div>
+
+## Main Changes
+
+- Feature: Introduced new "lorawan" SubGHz layer to support LoRaWAN LBM stack based on Semtech release [v4.8.0](https://github.com/Lora-net/SWL2001/tree/v4.8.0) (20-Dec-2024)
+  - Changed IRQ management approach
+  - Fixed Radio IRQ management in case of CRC error
+  - Adapted radio driver layer to WL5 HALs
+- Change: Folder "stm32_radio_driver" renamed in "radio_driver".
+  - This layer supports only Sigfox, Demostrations and SubGHz APPs 
+- Release Notes update
+
+## Known limitations:
+
+None
+
+</div>
+
+<label for="collapse-section5" aria-hidden="true">__V1.3.1 / 28-Aug-2024__</label>
+<div>
+
+## Main Changes
+
+- Fix: Application hangs because MBMUXIF_LoraSendCmd() command stuck
+- Fix: typo in setting MaxPayloadLength for GENERIC_LORA in RadioSetRxGenericConfig
+- Release Notes update
+
+## Known limitations:
+
+None
+
+</div>
 
 <label for="collapse-section4" aria-hidden="true">__V1.3.0 / 21-Oct-2022__</label>
 <div>
