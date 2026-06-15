@@ -380,8 +380,8 @@ int32_t RFW_TransmitLongPacket( uint16_t payload_size, uint32_t timeout,
                     uint8_t reg = SUBGRF_ReadRegister( SUBGHZ_GPKTCTL1AR );
                     SUBGRF_WriteRegister( SUBGHZ_GPKTCTL1AR, reg | 0x02 );
 
-                    TimerSetValue( RFWPacket.RxTimeoutTimer, timeout );
-                    TimerStart( RFWPacket.RxTimeoutTimer );
+                    TimerSetValue( RFWPacket.TxTimeoutTimer, timeout );
+                    TimerStart( RFWPacket.TxTimeoutTimer );
                 }
             }
             else

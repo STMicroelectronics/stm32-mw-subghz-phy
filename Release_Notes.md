@@ -17,6 +17,22 @@ This driver is composed of the radio driver and radio interface under "stm32_rad
 
 # Update History
 
+<label for="collapse-section7" aria-hidden="true">__V1.5.0 / 05-May-2026__</label>
+<div>
+
+## Main Changes
+
+-Feature: Introduced class B support in the Radio Planner
+-Fix: referenced the right TX timer in RFW_TransmitLongPacket function
+-Fix: fixed command size for SUBGRF_ClearDeviceErrors
+-Fix: Default AGCCFG value forced in case of FSK modulation
+
+## Known limitations:
+
+None
+
+</div>
+
 <label for="collapse-section6" aria-hidden="true">__V1.4.0 / 19-Dec-2025__</label>
 <div>
 

@@ -936,8 +936,8 @@ RadioError_t SUBGRF_GetDeviceErrors( void )
 
 void SUBGRF_ClearDeviceErrors( void )
 {
-    uint8_t buf[2] = { 0x00, 0x00 };
-    SUBGRF_WriteCommand( RADIO_CLR_ERROR, buf, 2 );
+    uint8_t buf[1] = { 0x00};
+    SUBGRF_WriteCommand( RADIO_CLR_ERROR, buf, 1 );
 }
 
 void SUBGRF_ClearIrqStatus( uint16_t irq )

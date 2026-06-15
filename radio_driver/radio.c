@@ -969,6 +969,9 @@ static void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
             SUBGRF_SetSyncWord( ( uint8_t[] ){ 0xC1, 0x94, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00 } );
             SUBGRF_SetWhiteningSeed( 0x01FF );
 
+            /* ensure AGC configuration is the default one (in case of previous config for LoRa) */
+            SUBGRF_WriteRegister(SUBGHZ_AGCCFG,0x20);
+
             /*timeout unused when SubgRf.RxContinuous*/
             SubgRf.RxTimeout = ( uint32_t )(( symbTimeout * 8 * 1000 ) /datarate);
             break;
