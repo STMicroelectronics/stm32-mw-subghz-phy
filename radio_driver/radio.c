@@ -235,7 +235,7 @@ static uint32_t RadioRandom( void );
  *                          FSK : timeout in number of bytes
  *                          LoRa: timeout in symbols
  * \param [in] fixLen       Fixed length packets [0: variable, 1: fixed]
- * \param [in] payloadLen   Sets payload length when fixed length is used
+ * \param [in] payloadLen   Sets the exact payload length for receiving fixed-length packets (fixLen == true), or the maximum payload length for receiving variable-length non-LoRa packets (fixLen == false && modem != MODEM_LORA). No effect on variable-length LoRa packets (fixLen == false && modem == MODEM_LORA).
  * \param [in] crcOn        Enables/Disables the CRC [0: OFF, 1: ON]
  * \param [in] FreqHopOn    Enables disables the intra-packet frequency hopping
  *                          FSK : N/A ( set to 0 )
@@ -421,12 +421,38 @@ static void RadioWriteRegisters( uint16_t addr, uint8_t *buffer, uint8_t size );
 static void RadioReadRegisters( uint16_t addr, uint8_t *buffer, uint8_t size );
 
 /*!
- * \brief Sets the maximum payload length.
+ * \brief Sets the exact payload length for receiving fixed-length packets, or the maximum payload length for receiving variable-length non-LoRa packets
  *
- * \param [in] modem      Radio modem to be used [0: FSK, 1: LoRa]
- * \param [in] max        Maximum payload length in bytes
+ * - For receiving fixed-length packets (any modulation), configures the exact expected payload length.
+ * - For receiving variable-length non-LoRa packets, configures the maximum payload length (longer packets will cause reception error - `RadioEvents_t.RxError()` )
+ * - No effect for receiving variable-length LoRa packets.
+ * - No effect on transmission.
+ *
+ * \param [in] MaxPayloadLength        Payload length in bytes
  */
-static void RadioSetMaxPayloadLength( RadioModems_t modem, uint8_t max );
+static void RadioSetMaxPayloadLength( uint8_t MaxPayloadLength );
+
+/*!
+ * \brief Programs the exact payload length into the radio hardware for the
+ *        LoRa modem.
+ *
+ * \param [in] payloadLength Payload length in bytes
+ */
+static void RadioWritePayloadLengthLora( uint8_t payloadLength );
+
+/*!
+ * \brief Programs the (max or actual) payload length into the radio hardware for all
+ *        modems other than LoRa.
+ *
+ * \param [in] payloadLength Payload length in bytes
+ */
+static void RadioWritePayloadLengthGeneric( uint8_t payloadLength );
+
+/*!
+ * \brief Programs the currently configured (max or actual) payload length, taken from
+ *        SubgRf.PacketParams, into the radio hardware.
+ */
+static void RadioSyncPayloadLength( void );
 
 /*!
  * \brief Sets the network to public or private. Updates the sync byte.
@@ -679,8 +705,6 @@ const struct Radio_s Radio =
 
 const RadioLoRaBandwidths_t Bandwidths[] = { LORA_BW_125, LORA_BW_250, LORA_BW_500 };
 
-static uint8_t MaxPayloadLength = RADIO_BUF_SIZE;
-
 static uint8_t RadioBuffer[RADIO_BUF_SIZE];
 
 /*
@@ -874,14 +898,6 @@ static void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
     {
         symbTimeout = 0;
     }
-    if( fixLen == true )
-    {
-        MaxPayloadLength = payloadLen;
-    }
-    else
-    {
-        MaxPayloadLength = 0xFF;
-    }
 
     switch( modem )
     {
@@ -901,7 +917,7 @@ static void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
             SubgRf.PacketParams.Params.Gfsk.SyncWordLength = 2 << 3; // convert byte into bit
             SubgRf.PacketParams.Params.Gfsk.AddrComp = RADIO_ADDRESSCOMP_FILT_OFF;
             SubgRf.PacketParams.Params.Gfsk.HeaderType = RADIO_PACKET_FIXED_LENGTH;
-            SubgRf.PacketParams.Params.Gfsk.PayloadLength = MaxPayloadLength;
+            SubgRf.PacketParams.Params.Gfsk.PayloadLength = payloadLen;
             SubgRf.PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_OFF;
 
             SubgRf.PacketParams.Params.Gfsk.DcFree = RADIO_DC_FREE_OFF;
@@ -951,7 +967,7 @@ static void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
             SubgRf.PacketParams.Params.Gfsk.SyncWordLength = 3 << 3; // convert byte into bit
             SubgRf.PacketParams.Params.Gfsk.AddrComp = RADIO_ADDRESSCOMP_FILT_OFF;
             SubgRf.PacketParams.Params.Gfsk.HeaderType = ( fixLen == true ) ? RADIO_PACKET_FIXED_LENGTH : RADIO_PACKET_VARIABLE_LENGTH;
-            SubgRf.PacketParams.Params.Gfsk.PayloadLength = MaxPayloadLength;
+            SubgRf.PacketParams.Params.Gfsk.PayloadLength = payloadLen;
             if( crcOn == true )
             {
                 SubgRf.PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_2_BYTES_CCIT;
@@ -1014,7 +1030,7 @@ static void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 
             SubgRf.PacketParams.Params.LoRa.HeaderType = ( RadioLoRaPacketLengthsMode_t )fixLen;
 
-            SubgRf.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength;
+            SubgRf.PacketParams.Params.LoRa.PayloadLength = payloadLen;
             SubgRf.PacketParams.Params.LoRa.CrcMode = ( RadioLoRaCrcModes_t )crcOn;
             SubgRf.PacketParams.Params.LoRa.InvertIQ = ( RadioLoRaIQModes_t )iqInverted;
 
@@ -1130,7 +1146,7 @@ static void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
                 SubgRf.PacketParams.Params.LoRa.PreambleLength = preambleLen;
             }
             SubgRf.PacketParams.Params.LoRa.HeaderType = ( RadioLoRaPacketLengthsMode_t )fixLen;
-            SubgRf.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength;
+            SubgRf.PacketParams.Params.LoRa.PayloadLength = 0xFF;
             SubgRf.PacketParams.Params.LoRa.CrcMode = ( RadioLoRaCrcModes_t )crcOn;
             SubgRf.PacketParams.Params.LoRa.InvertIQ = ( RadioLoRaIQModes_t )iqInverted;
 
@@ -1146,6 +1162,9 @@ static void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
             SubgRf.ModulationParams.Params.Bpsk.BitRate           = datarate;
             SubgRf.ModulationParams.Params.Bpsk.ModulationShaping = MOD_SHAPING_DBPSK;
             SUBGRF_SetModulationParams( &SubgRf.ModulationParams );
+            SubgRf.PacketParams.PacketType = PACKET_TYPE_BPSK;
+            SubgRf.PacketParams.Params.Bpsk.PayloadLength = 0xFF;
+            SUBGRF_SetPacketParams( &SubgRf.PacketParams );
             break;
 #endif /*RADIO_SIGFOX_ENABLE == 1*/
         default:
@@ -1362,8 +1381,7 @@ static radio_status_t RadioSend( uint8_t *buffer, uint8_t size )
         {
         case MODEM_LORA:
         {
-            SubgRf.PacketParams.Params.LoRa.PayloadLength = size;
-            SUBGRF_SetPacketParams( &SubgRf.PacketParams );
+            RadioWritePayloadLengthLora( size );
             SUBGRF_SendPayload( buffer, size, 0 );
             break;
         }
@@ -1375,8 +1393,7 @@ static radio_status_t RadioSend( uint8_t *buffer, uint8_t size )
                 uint8_t outsize;
                 if ( 0UL == RFW_TransmitInit( buffer,size, &outsize ) )
                 {
-                    SubgRf.PacketParams.Params.Gfsk.PayloadLength = outsize;
-                    SUBGRF_SetPacketParams( &SubgRf.PacketParams );
+                    RadioWritePayloadLengthGeneric( outsize );
                     SUBGRF_SendPayload( buffer, outsize, 0 );
                 }
                 else
@@ -1387,17 +1404,14 @@ static radio_status_t RadioSend( uint8_t *buffer, uint8_t size )
             }
             else
             {
-                SubgRf.PacketParams.Params.Gfsk.PayloadLength = size;
-                SUBGRF_SetPacketParams( &SubgRf.PacketParams );
+                RadioWritePayloadLengthGeneric( size );
                 SUBGRF_SendPayload( buffer, size, 0 );
             }
             break;
         }
         case MODEM_BPSK:
         {
-            SubgRf.PacketParams.PacketType = PACKET_TYPE_BPSK;
-            SubgRf.PacketParams.Params.Bpsk.PayloadLength = size;
-            SUBGRF_SetPacketParams( &SubgRf.PacketParams );
+            RadioWritePayloadLengthGeneric( size );
             SUBGRF_SendPayload( buffer, size, 0 );
             break;
         }
@@ -1409,9 +1423,7 @@ static radio_status_t RadioSend( uint8_t *buffer, uint8_t size )
             /* RadioBuffer is 1 bytes more */
             payload_integration( RadioBuffer, buffer, size );
 
-            SubgRf.PacketParams.PacketType = PACKET_TYPE_BPSK;
-            SubgRf.PacketParams.Params.Bpsk.PayloadLength = size + 1;
-            SUBGRF_SetPacketParams( &SubgRf.PacketParams );
+            RadioWritePayloadLengthGeneric( size + 1 );
 
             RadioWrite( SUBGHZ_RAM_RAMPUPL, 0 ); // clean start-up LSB
             RadioWrite( SUBGHZ_RAM_RAMPUPH, 0 ); // clean start-up MSB
@@ -1491,6 +1503,9 @@ static void RadioRx( uint32_t timeout )
     /* RF switch configuration */
     SUBGRF_SetSwitch( SubgRf.AntSwitchPaSelect, RFSWITCH_RX );
 
+    /* Restore the configured (max) payload length in the radio hardware */
+    RadioSyncPayloadLength( );
+
     if( SubgRf.RxContinuous == true )
     {
         SUBGRF_SetRx( 0xFFFFFF ); // Rx Continuous
@@ -1531,6 +1546,9 @@ static void RadioRxBoosted( uint32_t timeout )
     DBG_GPIO_RADIO_RX( SET );
     /* RF switch configuration */
     SUBGRF_SetSwitch( SubgRf.AntSwitchPaSelect, RFSWITCH_RX );
+
+    /* Restore the configured (max) payload length in the radio hardware */
+    RadioSyncPayloadLength( );
 
     if( SubgRf.RxContinuous == true )
     {
@@ -1618,19 +1636,46 @@ static void RadioReadRegisters( uint16_t addr, uint8_t *buffer, uint8_t size )
     SUBGRF_ReadRegisters( addr, buffer, size );
 }
 
-static void RadioSetMaxPayloadLength( RadioModems_t modem, uint8_t max )
+static void RadioWritePayloadLengthLora( uint8_t payloadLength )
 {
-    if( modem == MODEM_LORA )
+    /* Program the actual payload length directly into the radio hardware */
+    SUBGRF_WriteRegister( REG_LR_PAYLOADLENGTH, payloadLength );
+}
+
+static void RadioWritePayloadLengthGeneric( uint8_t payloadLength )
+{
+    /* Program the (max) payload length directly into the radio hardware */
+    SUBGRF_WriteRegister( SUBGHZ_GRTXPLDLEN, payloadLength );
+}
+
+static void RadioSyncPayloadLength( void )
+{
+    if( SubgRf.Modem == MODEM_LORA )
     {
-        SubgRf.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength = max;
-        SUBGRF_SetPacketParams( &SubgRf.PacketParams );
+        RadioWritePayloadLengthLora( SubgRf.PacketParams.Params.LoRa.PayloadLength );
     }
     else
     {
-        if( SubgRf.PacketParams.Params.Gfsk.HeaderType == RADIO_PACKET_VARIABLE_LENGTH )
+        RadioWritePayloadLengthGeneric( SubgRf.PacketParams.Params.Gfsk.PayloadLength );
+    }
+}
+
+static void RadioSetMaxPayloadLength( uint8_t MaxPayloadLength )
+{
+    if( SubgRf.PacketParams.PacketType == PACKET_TYPE_LORA )
+    {
+        if( SubgRf.PacketParams.Params.LoRa.HeaderType == LORA_PACKET_FIXED_LENGTH )
         {
-            SubgRf.PacketParams.Params.Gfsk.PayloadLength = MaxPayloadLength = max;
-            SUBGRF_SetPacketParams( &SubgRf.PacketParams );
+            SubgRf.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength;
+            RadioWritePayloadLengthLora( MaxPayloadLength );
+        }
+    }
+    else
+    {
+        if( SubgRf.PacketParams.Params.Gfsk.HeaderType == RADIO_PACKET_FIXED_LENGTH )
+        {
+            SubgRf.PacketParams.Params.Gfsk.PayloadLength = MaxPayloadLength;
+            RadioWritePayloadLengthGeneric( MaxPayloadLength );
         }
     }
 }
@@ -1938,7 +1983,6 @@ static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t
 #if (RADIO_GENERIC_CONFIG_ENABLE == 1)
     int32_t status = 0;
     uint8_t syncword[8] = {0};
-    uint8_t MaxPayloadLength;
 
     RFW_DeInit( ); /* switch Off FwPacketDecoding by default */
 
@@ -1977,19 +2021,16 @@ static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t
         SubgRf.PacketParams.Params.Gfsk.SyncWordLength = ( config->fsk.SyncWordLength ) << 3; // convert byte into bit
         SubgRf.PacketParams.Params.Gfsk.AddrComp = ( RadioAddressComp_t ) config->fsk.AddrComp;
 
-        if( config->fsk.LengthMode == RADIO_FSK_PACKET_FIXED_LENGTH )
-        {
-            SubgRf.PacketParams.Params.Gfsk.PayloadLength = config->fsk.MaxPayloadLength;
-        }
-        else if( config->fsk.LengthMode == RADIO_FSK_PACKET_2BYTES_LENGTH )
+        if( config->fsk.LengthMode == RADIO_FSK_PACKET_2BYTES_LENGTH )
         {
             /* Set max in the radio, in long packet mode will be tuned based dynamically on received chunk */
             SubgRf.PacketParams.Params.Gfsk.PayloadLength = 0xFF;
         }
         else
         {
-            /* Set max in the radio */
-            SubgRf.PacketParams.Params.Gfsk.PayloadLength = 0xFF;
+            
+            /* For LengthMode == RADIO_FSK_PACKET_VARIABLE_LENGTH or RADIO_FSK_PACKET_FIXED_LENGTH: Use the configured expected / maximum length */
+            SubgRf.PacketParams.Params.Gfsk.PayloadLength = config->fsk.MaxPayloadLength;
         }
 
         if( ( config->fsk.Whitening == RADIO_FSK_DC_IBM_WHITENING )
@@ -2038,14 +2079,7 @@ static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t
             return -1;
         }
 
-        if( config->lora.LengthMode == RADIO_LORA_PACKET_FIXED_LENGTH )
-        {
-            MaxPayloadLength = config->lora.MaxPayloadLength;
-        }
-        else
-        {
-            MaxPayloadLength = 0xFF;
-        }
+        SubgRf.PacketParams.Params.LoRa.PayloadLength = config->lora.PayloadLength;
         SUBGRF_SetStopRxTimerOnPreambleDetect( ( config->lora.StopTimerOnPreambleDetect == 0 ) ? false : true );
         SUBGRF_SetLoRaSymbNumTimeout( symbTimeout );
 
@@ -2078,7 +2112,6 @@ static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t
         SubgRf.PacketParams.PacketType = PACKET_TYPE_LORA;
         SubgRf.PacketParams.Params.LoRa.PreambleLength = config->lora.PreambleLen;
         SubgRf.PacketParams.Params.LoRa.HeaderType = ( RadioLoRaPacketLengthsMode_t ) config->lora.LengthMode;
-        SubgRf.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength;
         SubgRf.PacketParams.Params.LoRa.CrcMode = ( RadioLoRaCrcModes_t ) config->lora.CrcMode;
         SubgRf.PacketParams.Params.LoRa.InvertIQ = ( RadioLoRaIQModes_t ) config->lora.IqInverted;
 
@@ -2324,6 +2357,9 @@ static int32_t RadioSetTxGenericConfig( GenericModems_t modem, TxConfigGeneric_t
         SubgRf.ModulationParams.Params.Bpsk.BitRate = config->bpsk.BitRate;
         SubgRf.ModulationParams.Params.Bpsk.ModulationShaping = MOD_SHAPING_DBPSK;
         SUBGRF_SetModulationParams( &SubgRf.ModulationParams );
+        SubgRf.PacketParams.PacketType = PACKET_TYPE_BPSK;
+        SubgRf.PacketParams.Params.Bpsk.PayloadLength = 0xFF;
+        SUBGRF_SetPacketParams( &SubgRf.PacketParams );
         break;
     default:
         break;

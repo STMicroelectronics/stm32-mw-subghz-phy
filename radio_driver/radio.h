@@ -339,12 +339,16 @@ struct Radio_s
      */
     void    ( *ReadRegisters )( uint16_t addr, uint8_t *buffer, uint8_t size );
     /*!
-     * \brief Sets the maximum payload length.
+     * \brief Sets the exact payload length for receiving fixed-length packets, or the maximum payload length for receiving variable-length non-LoRa packets
      *
-     * \param [in] modem      Radio modem to be used [0: FSK, 1: LoRa]
-     * \param [in] max        Maximum payload length in bytes
+     * - For receiving fixed-length packets (any modulation), configures the exact expected payload length.
+     * - For receiving variable-length non-LoRa packets, configures the maximum payload length (longer packets will cause reception error - `RadioEvents_t.RxError()` )
+     * - No effect for receiving variable-length LoRa packets.
+     * - No effect on transmission.
+     *
+     * \param [in] MaxPayloadLength        Payload length in bytes
      */
-    void    ( *SetMaxPayloadLength )( RadioModems_t modem, uint8_t max );
+    void    ( *SetMaxPayloadLength )( uint8_t MaxPayloadLength );
     /*!
      * \brief Sets the network to public or private. Updates the sync byte.
      *

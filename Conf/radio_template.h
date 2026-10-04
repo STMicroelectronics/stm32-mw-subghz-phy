@@ -195,7 +195,7 @@ struct Radio_s
      *                          FSK : timeout in number of bytes
      *                          LoRa: timeout in symbols
      * \param [in] fixLen       Fixed length packets [0: variable, 1: fixed]
-     * \param [in] payloadLen   Sets payload length when fixed length is used
+     * \param [in] payloadLen   Sets the exact payload length for receiving fixed-length packets (fixLen == true), or the maximum payload length for receiving variable-length non-LoRa packets (fixLen == false && modem != MODEM_LORA). No effect on variable-length LoRa packets (fixLen == false && modem == MODEM_LORA).
      * \param [in] crcOn        Enables/Disables the CRC [0: OFF, 1: ON]
      * \param [in] freqHopOn    Enables disables the intra-packet frequency hopping
      *                          FSK : N/A ( set to 0 )
@@ -364,12 +364,16 @@ struct Radio_s
      */
     void    ( *ReadRegisters )( uint16_t addr, uint8_t *buffer, uint8_t size );
     /*!
-     * \brief Sets the maximum payload length.
-     *
-     * \param [in] modem      Radio modem to be used [0: FSK, 1: LoRa]
-     * \param [in] max        Maximum payload length in bytes
-     */
-    void    ( *SetMaxPayloadLength )( RadioModems_t modem, uint8_t max );
+    * \brief Sets the exact payload length for receiving fixed-length packets, or the maximum payload length for receiving variable-length non-LoRa packets
+    *
+    * - For receiving fixed-length packets (any modulation), configures the exact expected payload length.
+    * - For receiving variable-length non-LoRa packets, configures the maximum payload length (longer packets will cause reception error - `RadioEvents_t.RxError()` )
+    * - No effect for receiving variable-length LoRa packets.
+    * - No effect on transmission.
+    *
+    * \param [in] MaxPayloadLength        Payload length in bytes
+    */
+    void    ( *SetMaxPayloadLength )( uint8_t MaxPayloadLength );
     /*!
      * \brief Sets the network to public or private. Updates the sync byte.
      *

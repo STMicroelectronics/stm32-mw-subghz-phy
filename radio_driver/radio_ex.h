@@ -199,7 +199,7 @@ typedef struct
   RADIO_Ld_Opt_t LowDatarateOptimize;/*0 inactive, 1 active, otherwise auto (active for SF11 and SF12)*/
   uint16_t PreambleLen;
   RADIO_LoRaPacketLengthsMode_t LengthMode;
-  uint8_t MaxPayloadLength;
+  uint8_t PayloadLength;                              /* Configures the exact payload length for receiving fixed-length packets (LengthMode == RADIO_LORA_PACKET_FIXED_LENGTH ). No effect on receiving variable-length packets (LengthMode == RADIO_LORA_PACKET_VARIABLE_LENGTH) */
   RADIO_LoRaCrcModes_t CrcMode;
   RADIO_LoRaIQModes_t IqInverted;
 } generic_param_rx_lora_t;
@@ -214,7 +214,7 @@ typedef struct
   uint32_t BitRate;                                   /* BitRate */
   uint32_t PreambleLen;                               /* Preamble length in Byte */
   uint8_t* SyncWord;                                  /* SyncWord Buffer, 8 bytes max */
-  uint32_t MaxPayloadLength;                          /* maximum Payload length to listen */
+  uint32_t MaxPayloadLength;                          /* For receiving variable-length packets (LengthMode == RADIO_FSK_PACKET_VARIABLE_LENGTH or RADIO_FSK_PACKET_2BYTES_LENGTH), configures the maximum packet length. For receiving fixed-length packets (LengthMode == RADIO_FSK_PACKET_FIXED_LENGTH), configures the exact expected length. */
   uint16_t CrcPolynomial;                             /* Polynomial of the Crc*/
   uint16_t CrcSeed;                                   /* Seed of the Crc*/
   uint16_t whiteSeed;                                 /* WhiteningSeed, whitening can also be disabled by setting this field to 0 */
