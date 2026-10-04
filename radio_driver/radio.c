@@ -1857,6 +1857,8 @@ static void RadioIrqProcess( void )
         {
             //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
             SUBGRF_SetStandby( STDBY_RC );
+
+            TimerStop( &RxTimeoutTimer );
         }
         if( ( RadioEvents != NULL ) && ( RadioEvents->RxError ) )
         {
