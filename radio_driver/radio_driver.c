@@ -860,7 +860,7 @@ int8_t SUBGRF_GetRssiInst( void )
     int8_t rssi = 0;
 
     SUBGRF_ReadCommand( RADIO_GET_RSSIINST, buf, 1 );
-    rssi = -buf[0] >> 1;
+    rssi = -(buf[0] >> 1);
     return rssi;
 }
 
@@ -894,16 +894,16 @@ void SUBGRF_GetPacketStatus( PacketStatus_t *pktStatus )
     {
         case PACKET_TYPE_GFSK:
             pktStatus->Params.Gfsk.RxStatus = status[0];
-            pktStatus->Params.Gfsk.RssiSync = -status[1] >> 1;
-            pktStatus->Params.Gfsk.RssiAvg = -status[2] >> 1;
+            pktStatus->Params.Gfsk.RssiSync = -(status[1] >> 1);
+            pktStatus->Params.Gfsk.RssiAvg = -(status[2] >> 1);
             pktStatus->Params.Gfsk.FreqError = 0;
             break;
 
         case PACKET_TYPE_LORA:
-            pktStatus->Params.LoRa.RssiPkt = -status[0] >> 1;
+            pktStatus->Params.LoRa.RssiPkt = -(status[0] >> 1);
             // Returns SNR value [dB] rounded to the nearest integer value
-            pktStatus->Params.LoRa.SnrPkt = ( ( ( int8_t )status[1] ) + 2 ) >> 2;
-            pktStatus->Params.LoRa.SignalRssiPkt = -status[2] >> 1;
+            pktStatus->Params.LoRa.SnrPkt = ( int8_t ) ( ( status[1] + 2 ) >> 2);
+            pktStatus->Params.LoRa.SignalRssiPkt = -(status[2] >> 1);
             pktStatus->Params.LoRa.FreqError = FrequencyError;
             break;
 
