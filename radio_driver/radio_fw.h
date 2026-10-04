@@ -39,8 +39,8 @@ typedef enum
 
 typedef struct
 {
-    TxConfigGeneric_t *TxConfig;
-    RxConfigGeneric_t *RxConfig;
+    const TxConfigGeneric_t *TxConfig;
+    const RxConfigGeneric_t *RxConfig;
     ConfigGenericRTx_t rtx;
 } ConfigGeneric_t;
 
@@ -57,7 +57,7 @@ typedef struct
  * @param [in] TimeoutTimerEvent  Timer for Rx or Tx timeout event
  * @return 0 when no parameters error, -1 otherwise
  */
-int32_t RFW_Init( ConfigGeneric_t *config, RadioEvents_t *RadioEvents, TimerEvent_t *TimeoutTimerEvent );
+int32_t RFW_Init( const ConfigGeneric_t *config, RadioEvents_t *RadioEvents, TimerEvent_t *TimeoutTimerEvent );
 
 /*!
  * @brief Return whether the RFW module is enabled
@@ -110,12 +110,12 @@ int32_t RFW_ReceiveInit( void );
 /*!
  * @brief Initialise transmission for IBM whitening case
  *
- * @param [in,out] inOutBuffer pointer of exchange buffer to send or receive data
- * @param [in]     size input buffer size
- * @param [out]    outSize output buffer size
- *
+ * @param [in]     inBuffer  pointer of buffer holding the data to send
+ * @param [in]     size      input buffer size
+ * @param [out]    outSize   output buffer size
+ * @return pointer to the internal buffer holding the data ready to be sent, NULL on error
  */
-int32_t RFW_TransmitInit( uint8_t *inOutBuffer, uint8_t size, uint8_t *outSize );
+const uint8_t *RFW_TransmitInit( const uint8_t *inBuffer, uint8_t size, uint8_t *outSize );
 
 /*!
  * @brief Starts receiving payload. Called at Rx Sync IRQ
@@ -133,7 +133,7 @@ void RFW_ReceivePayload( void );
  *                                  size: size in bytes to feed. User to implement the offset based on previous chunk request
  * @return 0 when no parameters error, -1 otherwise
  */
-int32_t RFW_TransmitLongPacket( uint16_t payload_size, uint32_t timeout, void ( *TxLongPacketGetNextChunkCb )( uint8_t **buffer, uint8_t buffer_size ) );
+int32_t RFW_TransmitLongPacket( uint16_t payload_size, uint32_t timeout, void ( *TxLongPacketGetNextChunkCb )( const uint8_t **buffer, uint8_t buffer_size ) );
 
 /*!
  * @brief Starts receiving long Packet, packet maybe short

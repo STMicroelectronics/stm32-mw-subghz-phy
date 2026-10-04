@@ -858,7 +858,7 @@ RadioOperatingModes_t SUBGRF_GetOperatingMode( void );
  * \param [in]  payload       A pointer to the payload
  * \param [in]  size          The size of the payload
  */
-void SUBGRF_SetPayload( uint8_t *payload, uint8_t size );
+void SUBGRF_SetPayload( const uint8_t *payload, uint8_t size );
 
 /*!
  * \brief Reads the payload received. If the received payload is longer
@@ -877,7 +877,7 @@ uint8_t SUBGRF_GetPayload( uint8_t *payload, uint8_t *size, uint8_t maxSize );
  * \param [in]  size          The size of the payload to send
  * \param [in]  timeout       The timeout for Tx operation
  */
-void SUBGRF_SendPayload( uint8_t *payload, uint8_t size, uint32_t timeout );
+void SUBGRF_SendPayload( const uint8_t *payload, uint8_t size, uint32_t timeout );
 
 /*!
  * \brief Sets the Sync Word given by index used in GFSK
@@ -886,7 +886,7 @@ void SUBGRF_SendPayload( uint8_t *payload, uint8_t size, uint32_t timeout );
  *
  * \retval      status        [0: OK, 1: NOK]
  */
-uint8_t SUBGRF_SetSyncWord( uint8_t *syncWord );
+uint8_t SUBGRF_SetSyncWord( const uint8_t *syncWord );
 
 /*!
  * \brief Sets the Initial value for the LFSR used for the CRC calculation
@@ -1059,7 +1059,7 @@ void SUBGRF_SetRxTxFallbackMode( uint8_t fallbackMode );
  * \param [in]  buffer        The data to be written in radio's memory
  * \param [in]  size          The number of bytes to write in radio's memory
  */
-void SUBGRF_WriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size );
+void SUBGRF_WriteRegisters( uint16_t address, const uint8_t *buffer, uint16_t size );
 
 /*!
  * \brief Read data from the radio memory
@@ -1077,7 +1077,7 @@ void SUBGRF_ReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size );
  * \param [in]  buffer        The data to be written (the payload)
  * \param [in]  size          The number of byte to be written
  */
-void SUBGRF_WriteBuffer( uint8_t offset, uint8_t *buffer, uint8_t size );
+void SUBGRF_WriteBuffer( uint8_t offset, const uint8_t *buffer, uint8_t size );
 
 /*!
  * \brief Read data from the buffer holding the payload in the radio
@@ -1092,10 +1092,10 @@ void SUBGRF_ReadBuffer( uint8_t offset, uint8_t *buffer, uint8_t size );
  * \brief Write command to the radio
  *
  * \param [in]  Command       The Write Command
- * \param [out] pBuffer       A pointer command buffer
+ * \param [in]  pBuffer       A pointer command buffer
  * \param [in]  Size          Size in byte of the command buffer
  */
-void SUBGRF_WriteCommand( SUBGHZ_RadioSetCmd_t Command, uint8_t *pBuffer,
+void SUBGRF_WriteCommand( SUBGHZ_RadioSetCmd_t Command, const uint8_t *pBuffer,
                                         uint16_t Size );
 
 /*!
@@ -1171,14 +1171,14 @@ void SUBGRF_SetTxParams( uint8_t paSelect, int8_t power, RadioRampTimes_t rampTi
  *
  * \param [in]  modParams     A structure describing the modulation parameters
  */
-void SUBGRF_SetModulationParams( ModulationParams_t *modParams );
+void SUBGRF_SetModulationParams( const ModulationParams_t *modParams );
 
 /*!
  * \brief Sets the packet parameters
  *
  * \param [in]  packetParams  A structure describing the packet parameters
  */
-void SUBGRF_SetPacketParams( PacketParams_t *packetParams );
+void SUBGRF_SetPacketParams( const PacketParams_t *packetParams );
 
 /*!
  * \brief Sets the Channel Activity Detection (CAD) parameters

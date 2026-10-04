@@ -275,7 +275,7 @@ struct Radio_s
      *
      * \retval status        (OK, ERROR, ...)
      */
-    radio_status_t    ( *Send )( uint8_t *buffer, uint8_t size );
+    radio_status_t    ( *Send )( const uint8_t *buffer, uint8_t size );
     /*!
      * \brief Sets the radio in sleep mode
      */
@@ -329,7 +329,7 @@ struct Radio_s
      * \param [in] buffer Buffer containing the new register's values
      * \param [in] size   Number of registers to be written
      */
-    void    ( *WriteRegisters )( uint16_t addr, uint8_t *buffer, uint8_t size );
+    void    ( *WriteRegisters )( uint16_t addr, const uint8_t *buffer, uint8_t size );
     /*!
      * \brief Reads multiple radio registers starting at address
      *
@@ -403,7 +403,7 @@ struct Radio_s
      *                          LoRa: timeout in symbols
      * \return 0 when no parameters error, -1 otherwise
      */
-    int32_t ( *RadioSetRxGenericConfig )( GenericModems_t modem, RxConfigGeneric_t* config, uint32_t rxContinuous, uint32_t symbTimeout );
+    int32_t ( *RadioSetRxGenericConfig )( GenericModems_t modem, const RxConfigGeneric_t* config, uint32_t rxContinuous, uint32_t symbTimeout );
     /*!
      * \brief Sets the transmission parameters
      *
@@ -416,7 +416,7 @@ struct Radio_s
      * \param [in] timeout      Reception timeout [ms]
      * \return 0 when no parameters error, -1 otherwise
      */
-    int32_t ( *RadioSetTxGenericConfig )( GenericModems_t modem, TxConfigGeneric_t* config, int8_t power, uint32_t timeout );
+    int32_t ( *RadioSetTxGenericConfig )( GenericModems_t modem, const TxConfigGeneric_t* config, int8_t power, uint32_t timeout );
     /*!
      * \brief Starts sending long Packet, packet maybe short
      *
@@ -427,7 +427,7 @@ struct Radio_s
      *                                  size: size in bytes to feed
      * \return 0 when no parameters error, -1 otherwise
      */
-    int32_t ( *TransmitLongPacket )( uint16_t payload_size, uint32_t timeout,void (*TxLongPacketGetNextChunkCb) ( uint8_t** buffer, uint8_t buffer_size ) );
+    int32_t ( *TransmitLongPacket )( uint16_t payload_size, uint32_t timeout,void (*TxLongPacketGetNextChunkCb) ( const uint8_t** buffer, uint8_t buffer_size ) );
     /*!
      * \brief Starts receiving long Packet, packet maybe short
      *

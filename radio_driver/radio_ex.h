@@ -213,7 +213,7 @@ typedef struct
   uint32_t Bandwidth;
   uint32_t BitRate;                                   /* BitRate */
   uint32_t PreambleLen;                               /* Preamble length in Byte */
-  uint8_t* SyncWord;                                  /* SyncWord Buffer, 8 bytes max */
+  const uint8_t* SyncWord;                                  /* SyncWord Buffer, 8 bytes max */
   uint32_t MaxPayloadLength;                          /* maximum Payload length to listen */
   uint16_t CrcPolynomial;                             /* Polynomial of the Crc*/
   uint16_t CrcSeed;                                   /* Seed of the Crc*/
@@ -266,7 +266,7 @@ typedef struct
 {
   uint32_t BitRate;                                   /* BitRate */
   uint32_t PreambleLen;                               /* in Byte */
-  uint8_t* SyncWord;                                  /* SyncWord Buffer, 8 bytes max */
+  const uint8_t* SyncWord;                                  /* SyncWord Buffer, 8 bytes max */
   uint16_t CrcPolynomial;
   uint16_t CrcSeed;
   uint16_t whiteSeed;                                 /* Whitening seed, whitening can be disabled by setting this field to 0 */
@@ -285,7 +285,7 @@ typedef struct
 {
   uint32_t BitRate;                                   /* BitRate */
   uint32_t PreambleLen;                               /* in Byte */
-  uint8_t* SyncWord;                                  /* SyncWord Buffer, 8 bytes max */
+  const uint8_t* SyncWord;                                  /* SyncWord Buffer, 8 bytes max */
   uint16_t CrcPolynomial;
   uint16_t CrcSeed;
   uint16_t whiteSeed;                                 /* Whitening seed, whitening can be disabled by setting this field to 0 */

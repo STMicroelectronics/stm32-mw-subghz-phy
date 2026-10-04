@@ -346,7 +346,7 @@ static uint32_t RadioTimeOnAir( RadioModems_t modem, uint32_t bandwidth,
  *
  * \retval status        (OK, ERROR, ...)
  */
-static radio_status_t RadioSend( uint8_t *buffer, uint8_t size );
+static radio_status_t RadioSend( const uint8_t *buffer, uint8_t size );
 
 /*!
  * \brief Sets the radio in sleep mode
@@ -409,7 +409,7 @@ static uint8_t RadioRead( uint16_t addr );
  * \param [in] buffer Buffer containing the new register's values
  * \param [in] size   Number of registers to be written
  */
-static void RadioWriteRegisters( uint16_t addr, uint8_t *buffer, uint8_t size );
+static void RadioWriteRegisters( uint16_t addr, const uint8_t *buffer, uint8_t size );
 
 /*!
  * \brief Reads multiple radio registers starting at address
@@ -535,7 +535,7 @@ static void RadioTxCw( int8_t power );
  *                          LoRa: timeout in symbols
  * \return 0 when no parameters error, -1 otherwise
  */
-static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t *config,
+static int32_t RadioSetRxGenericConfig( GenericModems_t modem, const RxConfigGeneric_t *config,
                                         uint32_t rxContinuous, uint32_t symbTimeout );
 
 /*!
@@ -550,7 +550,7 @@ static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t
  * \param [in] timeout      Transmission timeout [ms]
  * \return 0 when no parameters error, -1 otherwise
  */
-static int32_t RadioSetTxGenericConfig( GenericModems_t modem, TxConfigGeneric_t *config,
+static int32_t RadioSetTxGenericConfig( GenericModems_t modem, const TxConfigGeneric_t *config,
                                         int8_t power, uint32_t timeout );
 
 /*!
@@ -1311,7 +1311,7 @@ static uint32_t RadioTimeOnAir( RadioModems_t modem, uint32_t bandwidth,
     return DIVC( numerator, denominator );
 }
 
-static radio_status_t RadioSend( uint8_t *buffer, uint8_t size )
+static radio_status_t RadioSend( const uint8_t *buffer, uint8_t size )
 {
     SUBGRF_SetDioIrqParams( IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_TX_DBG,
                             IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT | IRQ_TX_DBG,
@@ -1373,11 +1373,12 @@ static radio_status_t RadioSend( uint8_t *buffer, uint8_t size )
             if ( 1UL == RFW_Is_Init( ) )
             {
                 uint8_t outsize;
-                if ( 0UL == RFW_TransmitInit( buffer,size, &outsize ) )
+                const uint8_t *txBuffer = RFW_TransmitInit( buffer, size, &outsize );
+                if ( txBuffer != NULL )
                 {
                     SubgRf.PacketParams.Params.Gfsk.PayloadLength = outsize;
                     SUBGRF_SetPacketParams( &SubgRf.PacketParams );
-                    SUBGRF_SendPayload( buffer, outsize, 0 );
+                    SUBGRF_SendPayload( txBuffer, outsize, 0 );
                 }
                 else
                 {
@@ -1608,7 +1609,7 @@ static uint8_t RadioRead( uint16_t addr )
     return SUBGRF_ReadRegister( addr );
 }
 
-static void RadioWriteRegisters( uint16_t addr, uint8_t *buffer, uint8_t size )
+static void RadioWriteRegisters( uint16_t addr, const uint8_t *buffer, uint8_t size )
 {
     SUBGRF_WriteRegisters( addr, buffer, size );
 }
@@ -1932,7 +1933,7 @@ static void payload_integration( uint8_t *outBuffer, uint8_t *inBuffer, uint8_t 
 }
 #endif /*RADIO_SIGFOX_ENABLE == 1*/
 
-static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t *config, uint32_t rxContinuous,
+static int32_t RadioSetRxGenericConfig( GenericModems_t modem, const RxConfigGeneric_t *config, uint32_t rxContinuous,
                                         uint32_t symbTimeout )
 {
 #if (RADIO_GENERIC_CONFIG_ENABLE == 1)
@@ -2110,7 +2111,7 @@ static int32_t RadioSetRxGenericConfig( GenericModems_t modem, RxConfigGeneric_t
 #endif /* RADIO_GENERIC_CONFIG_ENABLE == 0*/
 }
 
-static int32_t RadioSetTxGenericConfig( GenericModems_t modem, TxConfigGeneric_t *config, int8_t power,
+static int32_t RadioSetTxGenericConfig( GenericModems_t modem, const TxConfigGeneric_t *config, int8_t power,
                                         uint32_t timeout )
 {
 #if( RADIO_LR_FHSS_IS_ON == 1 )
