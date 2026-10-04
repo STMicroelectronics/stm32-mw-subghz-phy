@@ -522,6 +522,13 @@ static void RadioTxPrbs( void );
 static void RadioTxCw( int8_t power );
 
 /*!
+ * \brief Sets the radio transmission power
+ *
+ * \param [in] power Tx power in dBm
+ */
+static void RadioSetTxPower( int8_t power );
+
+/*!
  * \brief Sets the reception parameters
  *
  * \param [in] modem        Radio modem to be used [GENERIC_FSK or GENERIC_FSK]
@@ -668,6 +675,7 @@ const struct Radio_s Radio =
     RadioSetRxDutyCycle,
     RadioTxPrbs,
     RadioTxCw,
+    RadioSetTxPower,
     RadioSetRxGenericConfig,
     RadioSetTxGenericConfig,
     RFW_TransmitLongPacket,
@@ -1152,10 +1160,7 @@ static void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
             break;
     }
 
-    SubgRf.AntSwitchPaSelect = SUBGRF_SetRfTxPower( power );
-    /* WORKAROUND - Trimming the output voltage power_ldo to 3.3V */
-    SUBGRF_WriteRegister(REG_DRV_CTRL, 0x7 << 1);
-    RFW_SetAntSwitch( SubgRf.AntSwitchPaSelect );
+    RadioSetTxPower( power );
     SubgRf.TxTimeout = timeout;
 }
 
@@ -1575,17 +1580,13 @@ static void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time
     }
 #endif /* RADIO_LR_FHSS_IS_ON == 1 */
     uint32_t timeout = ( uint32_t )time * 1000;
-    uint8_t antswitchpow;
 
     SUBGRF_SetRfFrequency( freq );
 
-    antswitchpow = SUBGRF_SetRfTxPower( power );
-
-    /* WORKAROUND - Trimming the output voltage power_ldo to 3.3V */
-    SUBGRF_WriteRegister(REG_DRV_CTRL, 0x7 << 1);
+    RadioSetTxPower( power );
 
     /* Set RF switch */
-    SUBGRF_SetSwitch( antswitchpow, RFSWITCH_TX );
+    SUBGRF_SetSwitch( SubgRf.AntSwitchPaSelect, RFSWITCH_TX );
 
     SUBGRF_SetTxContinuousWave( );
 
@@ -1884,12 +1885,18 @@ static void RadioTxPrbs( void )
     SUBGRF_SetTx( 0x0fffff );
 }
 
-static void RadioTxCw( int8_t power )
+static void RadioSetTxPower( int8_t power )
 {
-    uint8_t paselect = SUBGRF_SetRfTxPower( power );
+    SubgRf.AntSwitchPaSelect = SUBGRF_SetRfTxPower( power );
     /* WORKAROUND - Trimming the output voltage power_ldo to 3.3V */
     SUBGRF_WriteRegister(REG_DRV_CTRL, 0x7 << 1);
-    SUBGRF_SetSwitch( paselect, RFSWITCH_TX );
+    RFW_SetAntSwitch( SubgRf.AntSwitchPaSelect );
+}
+
+static void RadioTxCw( int8_t power )
+{
+    RadioSetTxPower( power );
+    SUBGRF_SetSwitch( SubgRf.AntSwitchPaSelect, RFSWITCH_TX );
     SUBGRF_SetTxContinuousWave( );
 }
 
@@ -2329,8 +2336,7 @@ static int32_t RadioSetTxGenericConfig( GenericModems_t modem, TxConfigGeneric_t
         break;
     }
 
-    SubgRf.AntSwitchPaSelect = SUBGRF_SetRfTxPower( power );
-    RFW_SetAntSwitch( SubgRf.AntSwitchPaSelect );
+    RadioSetTxPower( power );
     SubgRf.TxTimeout = timeout;
     return 0;
 #else /* RADIO_GENERIC_CONFIG_ENABLE == 1*/
@@ -2365,7 +2371,7 @@ static radio_status_t RadioLrFhssSetCfg( const radio_lr_fhss_cfg_params_t *cfg_p
 
     SubgRf.TxTimeout = cfg_params->tx_timeout_in_ms;
     /* set power and record RF switch config*/
-    SubgRf.AntSwitchPaSelect = SUBGRF_SetRfTxPower( SubgRf.lr_fhss.tx_rf_pwr_in_dbm );
+    RadioSetTxPower( SubgRf.lr_fhss.tx_rf_pwr_in_dbm );
 
     RadioStandby();
 

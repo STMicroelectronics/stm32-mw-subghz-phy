@@ -390,6 +390,12 @@ struct Radio_s
      */
     void    ( *TxCw )( int8_t power );
     /*!
+     * \brief Sets the radio transmission power
+     *
+     * \param [in] power Tx power in dBm
+     */
+    void    ( *SetTxPower )( int8_t power );
+    /*!
      * \brief Sets the reception parameters
      *
      * \param [in] modem        Radio modem to be used [GENERIC_FSK or GENERIC_FSK]
