@@ -134,6 +134,7 @@ static inline unsigned int wl_lr_fhss_get_grid_in_pll_steps( const wl_lr_fhss_pa
 radio_status_t wl_lr_fhss_init( const wl_lr_fhss_params_t *params )
 {
     radio_status_t status = RADIO_STATUS_OK;
+    (void) params;
     SUBGRF_SetPacketType( PACKET_TYPE_LR_FHSS );
 
     uint8_t pkt_params_buffer[8] = {0};
@@ -342,6 +343,8 @@ radio_status_t wl_lr_fhss_handle_hop( const wl_lr_fhss_params_t *params,
 radio_status_t wl_lr_fhss_handle_tx_done( const wl_lr_fhss_params_t *params,
                                           wl_lr_fhss_state_t *state )
 {
+    (void) params;
+    (void) state;
     //const uint8_t ctrl = WL_LR_FHSS_DISABLE_HOPPING;
 
     //return wl_write_register( context, WL_LR_FHSS_REG_CTRL, &ctrl, 1 );

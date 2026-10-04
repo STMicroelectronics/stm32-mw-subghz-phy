@@ -868,6 +868,9 @@ static void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 #if (RADIO_SIGFOX_ENABLE == 1)
     uint8_t modReg;
 #endif
+    (void) bandwidthAfc;
+    (void) freqHopOn;
+    (void) hopPeriod;
     SubgRf.RxContinuous = rxContinuous;
     RFW_DeInit();
     if( rxContinuous == true )
@@ -1059,6 +1062,8 @@ static void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
     /*disable LrFhss*/
     SubgRf.lr_fhss.is_lr_fhss_on = false;
 #endif /* RADIO_LR_FHSS_IS_ON == 1 */
+    (void) freqHopOn;
+    (void) hopPeriod;
     RFW_DeInit();
     switch( modem )
     {
@@ -1161,6 +1166,7 @@ static void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 
 static bool RadioCheckRfFrequency( uint32_t frequency )
 {
+    (void) frequency;
     return true;
 }
 
@@ -1209,6 +1215,8 @@ static uint32_t RadioGetGfskTimeOnAirNumerator( uint32_t datarate, uint8_t coder
                                                 uint16_t preambleLen, bool fixLen, uint8_t payloadLen,
                                                 bool crcOn )
 {
+    (void) datarate;
+    (void) coderate;
     return ( preambleLen << 3 ) +
            ( ( fixLen == false ) ? 8 : 0 ) + 24 +
            ( ( payloadLen + ( ( crcOn == true ) ? 2 : 0 ) ) << 3 );
@@ -1595,6 +1603,7 @@ static void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time
 
 static int16_t RadioRssi( RadioModems_t modem )
 {
+    (void) modem;
     return SUBGRF_GetRssiInst( );
 }
 
@@ -1661,11 +1670,13 @@ static uint32_t RadioGetWakeupTime( void )
 
 static void RadioOnTxTimeoutIrq( void *context )
 {
+    (void) context;
     RADIO_TX_TIMEOUT_PROCESS();
 }
 
 static void RadioOnRxTimeoutIrq( void *context )
 {
+    (void) context;
     RADIO_RX_TIMEOUT_PROCESS();
 }
 
@@ -2351,6 +2362,7 @@ static uint32_t GetNextFreqIdx( uint32_t max )
 static radio_status_t RadioLrFhssSetCfg( const radio_lr_fhss_cfg_params_t *cfg_params )
 {
     radio_status_t status = RADIO_STATUS_UNSUPPORTED_FEATURE;
+    (void) cfg_params;
 
 #if( RADIO_LR_FHSS_IS_ON == 1 )
     /* record config parameters in Subg structure*/
@@ -2382,6 +2394,8 @@ static radio_status_t RadioLrFhssSetCfg( const radio_lr_fhss_cfg_params_t *cfg_p
 static radio_status_t RadioLrFhssGetTimeOnAirInMs( const radio_lr_fhss_time_on_air_params_t *params,
                                                     uint32_t *time_on_air_in_ms )
 {
+    (void) params;
+    (void) time_on_air_in_ms;
 #if( RADIO_LR_FHSS_IS_ON == 1 )
     *time_on_air_in_ms = lr_fhss_get_time_on_air_in_ms( &params->radio_lr_fhss_params.lr_fhss_params,
                                                         params->pld_len_in_bytes );
