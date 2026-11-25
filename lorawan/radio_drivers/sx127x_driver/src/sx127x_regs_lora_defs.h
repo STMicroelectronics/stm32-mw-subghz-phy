@@ -215,15 +215,6 @@ enum sx127x_reg_lora_hop_channel_crc_on_payload_e
 };
 
 /**
- * @brief SX127X FhssPresentChannel - Current value of frequency hopping channel in use.
- * @remark read only
- */
-enum sx127x_reg_lora_hop_channel_fhss_present_channel_e
-{
-    SX127X_REG_LORA_HOP_CHANNEL_FHSS_PRESENT_CHANNEL_MASK = ~( 63 << 0 ),
-};
-
-/**
  * @brief SX1272 Bw - Signal bandwidth.
  */
 enum sx1272_reg_lora_modem_config_1_bw_e

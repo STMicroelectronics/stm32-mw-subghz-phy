@@ -46,7 +46,6 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "lr_fhss_v1_base_types.h"
 
 /*
  * -----------------------------------------------------------------------------
@@ -57,16 +56,6 @@ extern "C" {
  * -----------------------------------------------------------------------------
  * --- PUBLIC CONSTANTS --------------------------------------------------------
  */
-
-/**
- * @brief Number of state bytes necessary to guarantee functionality for all radios
- */
-#define RAL_LR_FHSS_STATE_MAXSIZE ( 24 )
-
-/**
- * @brief Length, in bytes, of a LR-FHSS sync word
- */
-#define LR_FHSS_SYNC_WORD_BYTES ( 4 )
 
 /**
  * @brief Reserved value used to configure a reception in continuous mode
@@ -394,26 +383,6 @@ typedef struct ral_flrc_pkt_params_s
     uint8_t             pld_len_in_bytes;
     ral_flrc_crc_type_t crc_type;
 } ral_flrc_pkt_params_t;
-
-/*!
- * @brief LR FHSS parameters
- */
-typedef struct ral_lr_fhss_params_s
-{
-    lr_fhss_v1_params_t lr_fhss_params;
-    uint32_t            center_frequency_in_hz;
-    int8_t              device_offset;
-} ral_lr_fhss_params_t;
-
-/*!
- * @brief Memory allocated to hold LR-FHSS state
- *
- * This memory is to be allocated by the caller. It is used by the radio driver to store internal
- * LR-FHSS state. This is not needed by all radio drivers, but in order to support all transceivers,
- * this should point to a block of at least RAL_LR_FHSS_STATE_MAXSIZE bytes of RAM. If you are only
- * targeting LR11XX, for instance, you may use NULL.
- */
-typedef void* ral_lr_fhss_memory_state_t;
 
 /**
  * @brief IRQ definitions

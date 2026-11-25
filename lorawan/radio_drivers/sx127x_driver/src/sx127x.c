@@ -2931,28 +2931,8 @@ static void dio_1_irq_gfsk_handler( sx127x_t* radio )
 
 static void dio_2_irq_lora_handler( sx127x_t* radio )
 {
-#if defined( IS_LORA_FREQUENCY_HOPPING_SUPPORTED )
-
-    if( ( radio->op_mode_irq == SX127X_REG_COMMON_OP_MODE_MODE_RX ) ||
-        ( radio->op_mode_irq == SX127X_REG_COMMON_OP_MODE_MODE_LORA_RX_SINGLE ) ||
-        ( radio->op_mode_irq == SX127X_REG_COMMON_OP_MODE_MODE_TX ) )
-    {
-        if( radio->is_lora_freq_hopping_on == true )
-        {
-            if( sx127x_clear_lora_irq_status( radio, SX127X_REG_LORA_IRQ_FLAGS_FHSS_CHANGE_CHANNEL ) !=
-                SX127X_STATUS_OK )
-            {
-                return;
-            }
-
-            // Notify upper layers that an SX127X_IRQ_FHSS_CHANNEL_CHANGE interrupt occurred
-            sx127x_notify_irq( radio, SX127X_IRQ_FHSS_CHANNEL_CHANGE );
-        }
-    }
-#else
     // Unused parameter
     ( void ) radio;
-#endif
 }
 
 static void dio_2_irq_gfsk_handler( sx127x_t* radio )

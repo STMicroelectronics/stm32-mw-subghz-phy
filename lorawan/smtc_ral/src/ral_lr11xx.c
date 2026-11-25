@@ -54,7 +54,6 @@
 #include "lr11xx_system.h"
 #include "lr11xx_radio.h"
 #include "lr11xx_regmem.h"
-#include "lr11xx_lr_fhss.h"
 #include "ral_lr11xx.h"
 #include "ral_lr11xx_bsp.h"
 
@@ -356,15 +355,6 @@ ral_status_t ral_lr11xx_convert_lora_pkt_params_from_ral( const ral_lora_pkt_par
  */
 ral_status_t ral_lr11xx_convert_lora_cad_params_from_ral( const ral_lora_cad_params_t* ral_lora_cad_params,
                                                           lr11xx_radio_cad_params_t*   radio_lora_cad_params );
-
-/**
- * @brief Convert LR-FHSS parameters from RAL context to LR11XX context
- *
- * @param [in] ral_lr_fhss_params     RAL LR-FHSS parameters
- * @param [out] radio_lr_fhss_params  Radio LR-FHSS parameters
- */
-void ral_lr11xx_convert_lr_fhss_params_from_ral( const ral_lr_fhss_params_t* ral_lr_fhss_params,
-                                                 lr11xx_lr_fhss_params_t*    radio_lr_fhss_params );
 
 /*
  * -----------------------------------------------------------------------------
@@ -1003,100 +993,6 @@ ral_status_t ral_lr11xx_set_gfsk_whitening_seed( const void* context, const uint
     return ( ral_status_t ) lr11xx_radio_set_gfsk_whitening_seed( context, seed );
 }
 
-ral_status_t ral_lr11xx_lr_fhss_init( const void* context, const ral_lr_fhss_params_t* lr_fhss_params )
-{
-    ( void ) lr_fhss_params;  // Unused parameter
-    return ( ral_status_t ) lr11xx_lr_fhss_init( context );
-}
-
-ral_status_t ral_lr11xx_lr_fhss_build_frame( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                             ral_lr_fhss_memory_state_t state, uint16_t hop_sequence_id,
-                                             const uint8_t* payload, uint16_t payload_length )
-{
-    ( void ) state;  // Unused argument
-
-    lr11xx_lr_fhss_params_t lr11xx_params;
-    ral_lr11xx_convert_lr_fhss_params_from_ral( lr_fhss_params, &lr11xx_params );
-
-    lr11xx_status_t status = lr11xx_radio_set_rf_freq( context, lr_fhss_params->center_frequency_in_hz );
-    if( status != LR11XX_STATUS_OK )
-    {
-        return ( ral_status_t ) status;
-    }
-
-    status = lr11xx_lr_fhss_build_frame( context, &lr11xx_params, hop_sequence_id, payload, payload_length );
-    if( status != LR11XX_STATUS_OK )
-    {
-        return ( ral_status_t ) status;
-    }
-
-    lr11xx_system_stat1_t stat1;
-    status = lr11xx_system_get_status( context, &stat1, 0, 0 );
-    if( status != LR11XX_STATUS_OK )
-    {
-        return ( ral_status_t ) status;
-    }
-
-    if( stat1.command_status != LR11XX_SYSTEM_CMD_STATUS_OK )
-    {
-        return RAL_STATUS_ERROR;
-    }
-
-    return RAL_STATUS_OK;
-}
-
-ral_status_t ral_lr11xx_lr_fhss_handle_hop( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                            ral_lr_fhss_memory_state_t state )
-{
-    ( void ) context;         // Unused arguments
-    ( void ) state;           // Unused arguments
-    ( void ) lr_fhss_params;  // Unused arguments
-    return RAL_STATUS_OK;
-}
-
-ral_status_t ral_lr11xx_lr_fhss_handle_tx_done( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                                ral_lr_fhss_memory_state_t state )
-{
-    ( void ) context;         // Unused arguments
-    ( void ) state;           // Unused arguments
-    ( void ) lr_fhss_params;  // Unused arguments
-    return RAL_STATUS_OK;
-}
-
-ral_status_t ral_lr11xx_lr_fhss_get_time_on_air_in_ms( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                                       uint16_t payload_length, uint32_t* time_on_air )
-{
-    lr11xx_lr_fhss_params_t lr11xx_params;
-    ral_lr11xx_convert_lr_fhss_params_from_ral( lr_fhss_params, &lr11xx_params );
-
-    *time_on_air = lr11xx_lr_fhss_get_time_on_air_in_ms( &lr11xx_params, payload_length );
-
-    return RAL_STATUS_OK;
-}
-
-ral_status_t ral_lr11xx_lr_fhss_get_hop_sequence_count( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                                        unsigned int* hop_sequence_count )
-{
-    lr11xx_lr_fhss_params_t lr11xx_params;
-    ral_lr11xx_convert_lr_fhss_params_from_ral( lr_fhss_params, &lr11xx_params );
-
-    *hop_sequence_count = lr11xx_lr_fhss_get_hop_sequence_count( &lr11xx_params );
-
-    return RAL_STATUS_OK;
-}
-
-ral_status_t ral_lr11xx_lr_fhss_get_bit_delay_in_us( const void* context, const ral_lr_fhss_params_t* params,
-                                                     uint16_t payload_length, uint16_t* delay )
-{
-    lr11xx_lr_fhss_params_t lr11xx_params;
-
-    ral_lr11xx_convert_lr_fhss_params_from_ral( params, &lr11xx_params );
-
-    *delay = lr11xx_lr_fhss_get_bit_delay_in_us( &lr11xx_params, payload_length );
-
-    return RAL_STATUS_OK;
-}
-
 ral_status_t ral_lr11xx_get_lora_rx_pkt_cr_crc( const void* context, ral_lora_cr_t* cr, bool* is_crc_present )
 {
     return RAL_STATUS_UNSUPPORTED_FEATURE;
@@ -1318,10 +1214,6 @@ ral_irq_t ral_lr11xx_convert_irq_flags_to_ral( lr11xx_system_irq_mask_t lr11xx_i
     {
         ral_irq |= RAL_IRQ_CAD_OK;
     }
-    if( ( lr11xx_irq_status & LR11XX_SYSTEM_IRQ_LR_FHSS_INTRA_PKT_HOP ) != 0 )
-    {
-        ral_irq |= RAL_IRQ_LR_FHSS_HOP;
-    }
     if( ( lr11xx_irq_status & LR11XX_SYSTEM_IRQ_WIFI_SCAN_DONE ) != 0 )
     {
         ral_irq |= RAL_IRQ_WIFI_SCAN_DONE;
@@ -1373,10 +1265,6 @@ lr11xx_system_irq_mask_t ral_lr11xx_convert_irq_flags_from_ral( ral_irq_t ral_ir
     if( ( ral_irq & RAL_IRQ_CAD_OK ) != 0 )
     {
         lr11xx_irq_status |= LR11XX_SYSTEM_IRQ_CAD_DETECTED;
-    }
-    if( ( ral_irq & RAL_IRQ_LR_FHSS_HOP ) != 0 )
-    {
-        lr11xx_irq_status |= LR11XX_SYSTEM_IRQ_LR_FHSS_INTRA_PKT_HOP;
     }
     if( ( ral_irq & RAL_IRQ_WIFI_SCAN_DONE ) != 0 )
     {
@@ -1767,15 +1655,6 @@ ral_status_t ral_lr11xx_convert_lora_cad_params_from_ral( const ral_lora_cad_par
         lr11xx_radio_convert_time_in_ms_to_rtc_step( ral_lora_cad_params->cad_timeout_in_ms );
 
     return RAL_STATUS_OK;
-}
-
-void ral_lr11xx_convert_lr_fhss_params_from_ral( const ral_lr_fhss_params_t* ral_lr_fhss_params,
-                                                 lr11xx_lr_fhss_params_t*    radio_lr_fhss_params )
-{
-    *radio_lr_fhss_params = ( lr11xx_lr_fhss_params_t ){
-        .lr_fhss_params = ral_lr_fhss_params->lr_fhss_params,
-        .device_offset  = ral_lr_fhss_params->device_offset,
-    };
 }
 
 ral_status_t ral_lr11xx_set_ant_switch( bool is_tx_on )

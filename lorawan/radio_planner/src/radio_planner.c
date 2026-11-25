@@ -504,12 +504,7 @@ void rp_callback( radio_planner_t* rp )
         {
             SMTC_MODEM_HAL_RP_TRACE_PRINTF( " RP: INFO - Radio IRQ received for hook #%u\n", rp->radio_task_id );
 
-            if( rp->status[rp->radio_task_id] == RP_STATUS_LR_FHSS_HOP )
-            {
-                return;
-            }
-
-            // Compute statistics after LR-FHSS hopping interrupts to have the correct TOA and not only by hop
+            // Compute statistics to have the correct TOA and not only by hop
             rp_consumption_statistics_updated( rp, rp->radio_task_id, rp->irq_timestamp_ms[rp->radio_task_id] );
 
             // Tx can be performed only if no activity detected on channel
@@ -1035,9 +1030,6 @@ static void rp_task_print( const radio_planner_t* rp, const rp_task_t* task )
     case RP_TASK_TYPE_TX_FSK:
         SMTC_MODEM_HAL_RP_TRACE_PRINTF( " TASK_TX_FSK " );
         break;
-    case RP_TASK_TYPE_TX_LR_FHSS:
-        SMTC_MODEM_HAL_RP_TRACE_PRINTF( " TASK_TX_LR_FHSS " );
-        break;
     case RP_TASK_TYPE_CAD:
         SMTC_MODEM_HAL_RP_TRACE_PRINTF( " TASK_CAD " );
         break;
@@ -1106,15 +1098,6 @@ static void rp_consumption_statistics_updated( radio_planner_t* rp, const uint8_
                                       rp->radio_params[hook_id].tx.gfsk.rf_freq_in_hz, &micro_ampere_radio );
         tx_freq_hz = rp->radio_params[hook_id].tx.gfsk.rf_freq_in_hz;
     }
-    else if( rp->tasks[hook_id].type == RP_TASK_TYPE_TX_LR_FHSS )
-    {
-        // The power and duty-cycle are computed only on the center_frequency_in_hz and not on all hopping
-        ral_get_tx_consumption_in_ua( TARGET_RAL_FOR_HOOK_ID, rp->radio_params[hook_id].tx.lr_fhss.output_pwr_in_dbm,
-                                      rp->radio_params[hook_id].tx.lr_fhss.ral_lr_fhss_params.center_frequency_in_hz,
-                                      &micro_ampere_radio );
-
-        tx_freq_hz = rp->radio_params[hook_id].tx.lr_fhss.ral_lr_fhss_params.center_frequency_in_hz;
-    }
 
     if( ( rp->tasks[hook_id].type == RP_TASK_TYPE_GNSS_SNIFF ) ||
         ( rp->tasks[hook_id].type == RP_TASK_TYPE_GNSS_RSSI ) ||
@@ -1125,7 +1108,7 @@ static void rp_consumption_statistics_updated( radio_planner_t* rp, const uint8_
                                micro_ampere_process );
     }
     else if( ( rp->tasks[hook_id].type == RP_TASK_TYPE_TX_BLE ) || ( rp->tasks[hook_id].type == RP_TASK_TYPE_RX_BLE ) ||
-             ( rp->tasks[hook_id].type == RP_TASK_TYPE_RX_BLE_SCAN ) )
+             ( rp->tasks[hook_id].type == RP_TASK_TYPE_RX_BLE_SCAN ) || ( rp->tasks[hook_id].type == RP_TASK_TYPE_TX_LR_FHSS ))
     {
         // TODO for this kind of task
     }
@@ -1167,20 +1150,6 @@ static void RadioIrqProcess( irq_mask_t radioIrq )
 			DBG_GPIO_RADIO_TX( RST );
 			MW_LOG( TS_ON, VLEVEL_M,  " TX DONE\r\n" );
 			rp->status[rp->radio_task_id] = RP_STATUS_TX_DONE;
-
-			if( rp->priority_task.type == RP_TASK_TYPE_TX_LR_FHSS )
-			{
-				ral_lr_fhss_handle_tx_done( TARGET_RAL_FOR_HOOK_ID,
-						&rp->radio_params[rp->radio_task_id].tx.lr_fhss.ral_lr_fhss_params, NULL );
-
-				// fix issue with delay between the end of the transmission and the generation of txdone irq
-				// get delay according to lr-fhss params
-				uint16_t bit_delay_us = 0;
-				ral_lr_fhss_get_bit_delay_in_us( TARGET_RAL_FOR_HOOK_ID, &rp->radio_params[rp->radio_task_id].tx.lr_fhss.ral_lr_fhss_params,
-										rp->payload_buffer_size[rp->radio_task_id], &bit_delay_us );
-
-				rp->irq_timestamp_ms[rp->radio_task_id] = rp->irq_timestamp_ms[rp->radio_task_id] - ( ( uint32_t ) bit_delay_us / 1000 );
-			}
 
 			//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
 			SMTC_MODEM_HAL_PANIC_ON_FAILURE( ral_set_standby( TARGET_RAL, RAL_STANDBY_CFG_RC ) == RAL_STATUS_OK );
@@ -1234,8 +1203,7 @@ static void RadioIrqProcess( irq_mask_t radioIrq )
 			MW_LOG( TS_ON, VLEVEL_M,  " IRQ_RADIO_RX_TX_TIMEOUT\r\n" );
 
 			if(( rp->tasks[rp->radio_task_id].type == RP_TASK_TYPE_TX_LORA ) ||
-				( rp->tasks[rp->radio_task_id].type == RP_TASK_TYPE_TX_FSK ) ||
-					( rp->tasks[rp->radio_task_id].type == RP_TASK_TYPE_TX_LR_FHSS ))
+				( rp->tasks[rp->radio_task_id].type == RP_TASK_TYPE_TX_FSK ))
 			{
 				rp->status[rp->radio_task_id] = RP_STATUS_TX_TIMEOUT;
 			}
@@ -1269,19 +1237,6 @@ static void RadioIrqProcess( irq_mask_t radioIrq )
 			MW_LOG( TS_ON, VLEVEL_M,  " IRQ_RADIO_CRC_ERROR\r\n" );
 			rp->status[rp->radio_task_id] = RP_STATUS_RX_CRC_ERROR;
 			break;
-	//#if( RADIO_LR_FHSS_IS_ON == 1 )
-		case IRQ_RADIO_LR_FHSS_HOP:
-		{
-			MW_LOG( TS_ON, VLEVEL_M,  " HOP\r\n" );
-			rp->status[rp->radio_task_id] = RP_STATUS_LR_FHSS_HOP;
-			SMTC_MODEM_HAL_PANIC_ON_FAILURE(ral_lr_fhss_handle_hop(
-					TARGET_RAL_FOR_HOOK_ID, &rp->radio_params[rp->radio_task_id].tx.lr_fhss.ral_lr_fhss_params,
-					( ral_lr_fhss_memory_state_t ) rp->radio_params[rp->radio_task_id].lr_fhss_state ) == RAL_STATUS_OK );
-			//( void ) wl_lr_fhss_handle_hop( &SubgRf.lr_fhss.lr_fhss_params, &SubgRf.lr_fhss.lr_fhss_state );
-
-			break;
-		}
-	//#endif /* RADIO_LR_FHSS_IS_ON == 1 */
 		default:
 			break;
 		}

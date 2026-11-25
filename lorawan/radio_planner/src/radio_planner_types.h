@@ -145,7 +145,6 @@ typedef struct rp_radio_params_s
         {
             ralf_params_gfsk_t    gfsk;
             ralf_params_lora_t    lora;
-            ralf_params_lr_fhss_t lr_fhss;
         };
     } tx;
     struct
@@ -165,7 +164,6 @@ typedef struct rp_radio_params_s
         };
     } rx;
     int16_t lbt_threshold;
-    uint8_t lr_fhss_state[RAL_LR_FHSS_STATE_MAXSIZE];
 } rp_radio_params_t;
 
 /*!

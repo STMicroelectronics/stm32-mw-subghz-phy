@@ -17,6 +17,19 @@ This driver is composed of the radio driver and radio interface under "stm32_rad
 
 # Update History
 
+<label for="collapse-section10" aria-hidden="true">__V1.6.0 / 19-Oct-2026__</label>
+<div>
+
+## Main Changes
+
+-Removed LR-FHSS source code
+
+## Known limitations:
+
+None
+
+</div>
+
 <label for="collapse-section9" aria-hidden="true">__V1.5.2 / 23-Sep-2026__</label>
 <div>
 

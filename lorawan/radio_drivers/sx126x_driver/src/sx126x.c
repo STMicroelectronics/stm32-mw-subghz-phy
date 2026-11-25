@@ -1456,11 +1456,6 @@ void HAL_SUBGHZ_HeaderValidCallback(SUBGHZ_HandleTypeDef *hsubghz)
     RadioOnDioIrqCb( IRQ_RADIO_HEADER_VALID );
 }
 
-void HAL_SUBGHZ_LrFhssHopCallback(SUBGHZ_HandleTypeDef *hsubghz)
-{
-    RadioOnDioIrqCb( IRQ_RADIO_LR_FHSS_HOP );
-}
-
 static void Radio_SMPS_Set(uint8_t level)
 {
   if ( 1U == RBI_IsDCDC() )

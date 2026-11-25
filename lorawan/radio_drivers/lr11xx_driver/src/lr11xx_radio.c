@@ -390,18 +390,6 @@ lr11xx_status_t lr11xx_radio_set_lora_public_network( const void*               
     return ( lr11xx_status_t ) lr11xx_hal_write( context, cbuffer, LR11XX_RADIO_SET_LORA_SYNC_WORD_CMD_LENGTH, 0, 0 );
 }
 
-lr11xx_status_t lr11xx_radio_set_lr_fhss_sync_word( const void*   context,
-                                                    const uint8_t sync_word[LR11XX_RADIO_LR_FHSS_SYNC_WORD_LENGTH] )
-{
-    const uint8_t cbuffer[LR11XX_RADIO_SET_LR_FHSS_SYNC_WORD_LENGTH] = {
-        ( uint8_t ) ( LR11XX_RADIO_SET_LR_FHSS_SYNC_WORD_OC >> 8 ),
-        ( uint8_t ) ( LR11XX_RADIO_SET_LR_FHSS_SYNC_WORD_OC >> 0 ),
-    };
-
-    return ( lr11xx_status_t ) lr11xx_hal_write( context, cbuffer, LR11XX_RADIO_SET_LR_FHSS_SYNC_WORD_LENGTH, sync_word,
-                                                 LR11XX_RADIO_LR_FHSS_SYNC_WORD_LENGTH );
-}
-
 lr11xx_status_t lr11xx_radio_set_rx( const void* context, const uint32_t timeout_in_ms )
 {
     const uint32_t timeout_in_rtc_step = lr11xx_radio_convert_time_in_ms_to_rtc_step( timeout_in_ms );
@@ -586,23 +574,6 @@ lr11xx_status_t lr11xx_radio_set_lora_mod_params( const void*                   
     };
 
     return ( lr11xx_status_t ) lr11xx_hal_write( context, cbuffer, LR11XX_RADIO_SET_MODULATION_PARAMS_LORA_CMD_LENGTH,
-                                                 0, 0 );
-}
-
-lr11xx_status_t lr11xx_radio_set_lr_fhss_mod_params( const void*                              radio,
-                                                     const lr11xx_radio_mod_params_lr_fhss_t* mod_params )
-{
-    const uint8_t cbuffer[LR11XX_RADIO_SET_MODULATION_PARAMS_LR_FHSS_CMD_LENGTH] = {
-        ( uint8_t ) ( LR11XX_RADIO_SET_MODULATION_PARAM_OC >> 8 ),
-        ( uint8_t ) ( LR11XX_RADIO_SET_MODULATION_PARAM_OC >> 0 ),
-        ( uint8_t ) ( mod_params->br_in_bps >> 24 ),
-        ( uint8_t ) ( mod_params->br_in_bps >> 16 ),
-        ( uint8_t ) ( mod_params->br_in_bps >> 8 ),
-        ( uint8_t ) ( mod_params->br_in_bps >> 0 ),
-        ( uint8_t ) mod_params->pulse_shape,
-    };
-
-    return ( lr11xx_status_t ) lr11xx_hal_write( radio, cbuffer, LR11XX_RADIO_SET_MODULATION_PARAMS_LR_FHSS_CMD_LENGTH,
                                                  0, 0 );
 }
 

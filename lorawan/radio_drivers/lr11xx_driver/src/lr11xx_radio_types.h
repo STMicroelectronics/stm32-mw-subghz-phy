@@ -398,24 +398,6 @@ typedef enum
 } lr11xx_radio_bpsk_pulse_shape_t;
 
 /*!
- * @brief LR-FHSS bitrate configurations
- */
-typedef enum
-{
-    LR11XX_RADIO_LR_FHSS_BITRATE_488_BPS =
-        ( int ) ( LR11XX_RADIO_LR_FHSS_BITRATE_DIVIDE_BY_256 +
-                  LR11XX_RADIO_LR_FHSS_BITRATE_IN_256_BPS_STEPS ),  //!< 488.28215 bps
-} lr11xx_radio_lr_fhss_bitrate_t;
-
-/*!
- * @brief LR-FHSS pulse shape configurations
- */
-typedef enum
-{
-    LR11XX_RADIO_LR_FHSS_PULSE_SHAPE_BT_1 = 0x0B  //!< Gaussian BT 1.0
-} lr11xx_radio_lr_fhss_pulse_shape_t;
-
-/*!
  * @brief Channel Activity Detection parameters
  *
  * Parameters detPeak and detMin are to be used for tuning the sensitivity of Channel Activity Detection. It depends on
@@ -527,15 +509,6 @@ typedef struct lr11xx_radio_mod_params_lora_s
     lr11xx_radio_lora_cr_t cr;    //!< LoRa coding rate
     uint8_t                ldro;  //!< LoRa LDRO
 } lr11xx_radio_mod_params_lora_t;
-
-/*!
- * @brief Modulation configuration for LR-FHSS packets
- */
-typedef struct lr11xx_radio_mod_params_lr_fhss_s
-{
-    lr11xx_radio_lr_fhss_bitrate_t     br_in_bps;    //!< LR-FHSS bitrate
-    lr11xx_radio_lr_fhss_pulse_shape_t pulse_shape;  //!< LR-FHSS pulse shape
-} lr11xx_radio_mod_params_lr_fhss_t;
 
 /*!
  * @brief Packet parameter configuration for GFSK packets

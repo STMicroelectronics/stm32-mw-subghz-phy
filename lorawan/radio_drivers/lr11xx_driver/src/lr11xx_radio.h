@@ -71,11 +71,6 @@ extern "C" {
     }
 
 /*!
- * @brief Length in byte of the LR-FHSS sync word
- */
-#define LR11XX_RADIO_LR_FHSS_SYNC_WORD_LENGTH ( 4 )
-
-/*!
  * @brief Ramp-up delay for the power amplifier in Sigfox context
  *
  * This parameter configures the delay to fine tune the ramp-up time of the power amplifier for BPSK operation.
@@ -233,19 +228,6 @@ lr11xx_status_t lr11xx_radio_set_gfsk_sync_word( const void*   context,
  * @returns Operation status
  */
 lr11xx_status_t lr11xx_radio_set_lora_sync_word( const void* context, const uint8_t sync_word );
-
-/*!
- * @brief Set the syncword for LR-FHSS
- *
- * Default value: 0x2C0F7995
- *
- * @param [in] context Chip implementation context
- * @param [in] sync_word The syncword to set. It is up to the caller to ensure this array is at least four bytes long
- *
- * @returns Operation status
- */
-lr11xx_status_t lr11xx_radio_set_lr_fhss_sync_word( const void*   context,
-                                                    const uint8_t sync_word[LR11XX_RADIO_LR_FHSS_SYNC_WORD_LENGTH] );
 
 /*!
  * @brief Set the LoRa modem sync word to private / public
@@ -469,21 +451,6 @@ lr11xx_status_t lr11xx_radio_set_bpsk_mod_params( const void*                   
  */
 lr11xx_status_t lr11xx_radio_set_lora_mod_params( const void*                           context,
                                                   const lr11xx_radio_mod_params_lora_t* mod_params );
-
-/*!
- * @brief Set the modulation parameters for LR-FHSS
- *
- * The command @ref lr11xx_radio_set_pkt_type must be called prior this one.
- *
- * @param [in] context Chip implementation context
- * @param [in] mod_params The structure of modulation configuration
- *
- * @returns Operation status
- *
- * @see lr11xx_lr_fhss_set_pkt_type
- */
-lr11xx_status_t lr11xx_radio_set_lr_fhss_mod_params( const void*                              context,
-                                                     const lr11xx_radio_mod_params_lr_fhss_t* mod_params );
 
 /*!
  * @brief Set the packet parameters for GFSK packets

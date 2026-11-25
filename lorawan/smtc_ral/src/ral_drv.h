@@ -134,23 +134,6 @@ typedef ral_status_t ( *ral_set_gfsk_crc_params_f )( const void* context, const 
                                                      const uint32_t polynomial );
 typedef ral_status_t ( *ral_set_flrc_crc_params_f )( const void* context, const uint32_t seed );
 typedef ral_status_t ( *ral_set_gfsk_whitening_seed_f )( const void* context, const uint16_t seed );
-typedef ral_status_t ( *ral_lr_fhss_init_f )( const void* context, const ral_lr_fhss_params_t* lr_fhss_params );
-typedef ral_status_t ( *ral_lr_fhss_build_frame_f )( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                                     ral_lr_fhss_memory_state_t memory_state_holder,
-                                                     uint16_t hop_sequence_id, const uint8_t* payload,
-                                                     uint16_t payload_length );
-typedef ral_status_t ( *ral_lr_fhss_handle_hop_f )( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                                    ral_lr_fhss_memory_state_t state );
-typedef ral_status_t ( *ral_lr_fhss_handle_tx_done_f )( const void* context, const ral_lr_fhss_params_t* lr_fhss_params,
-                                                        ral_lr_fhss_memory_state_t state );
-typedef ral_status_t ( *ral_lr_fhss_get_time_on_air_in_ms_f )( const void*                 context,
-                                                               const ral_lr_fhss_params_t* lr_fhss_params,
-                                                               uint16_t payload_length, uint32_t* time_on_air );
-typedef ral_status_t ( *ral_lr_fhss_get_hop_sequence_count_f )( const void*                 context,
-                                                                const ral_lr_fhss_params_t* lr_fhss_params,
-                                                                unsigned int*               hop_sequence_count );
-typedef ral_status_t ( *ral_lr_fhss_get_bit_delay_in_us_f )( const void* context, const ral_lr_fhss_params_t* params,
-                                                             uint16_t payload_length, uint16_t* delay );
 typedef ral_status_t ( *ral_get_lora_rx_pkt_cr_crc_f )( const void* context, ral_lora_cr_t* cr, bool* is_crc_present );
 typedef ral_status_t ( *ral_get_tx_consumption_in_ua_f )( const void* context, const int8_t output_pwr_in_dbm,
                                                           const uint32_t rf_freq_in_hz,
@@ -219,13 +202,6 @@ typedef struct ral_drv_s
     ral_set_gfsk_crc_params_f            set_gfsk_crc_params;
     ral_set_flrc_crc_params_f            set_flrc_crc_params;
     ral_set_gfsk_whitening_seed_f        set_gfsk_whitening_seed;
-    ral_lr_fhss_init_f                   lr_fhss_init;
-    ral_lr_fhss_build_frame_f            lr_fhss_build_frame;
-    ral_lr_fhss_handle_hop_f             lr_fhss_handle_hop;
-    ral_lr_fhss_handle_tx_done_f         lr_fhss_handle_tx_done;
-    ral_lr_fhss_get_time_on_air_in_ms_f  lr_fhss_get_time_on_air_in_ms;
-    ral_lr_fhss_get_hop_sequence_count_f lr_fhss_get_hop_sequence_count;
-    ral_lr_fhss_get_bit_delay_in_us_f    lr_fhss_get_bit_delay_in_us;
     ral_get_lora_rx_pkt_cr_crc_f         get_lora_rx_pkt_cr_crc;
     ral_get_tx_consumption_in_ua_f       get_tx_consumption_in_ua;
     ral_get_gfsk_rx_consumption_in_ua_f  get_gfsk_rx_consumption_in_ua;
