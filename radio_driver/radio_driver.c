@@ -1082,21 +1082,25 @@ uint32_t SUBGRF_GetRadioWakeUpTime( void )
 /* HAL_SUBGHz Callbacks definitions */
 void HAL_SUBGHZ_TxCpltCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_TX_DONE );
 }
 
 void HAL_SUBGHZ_RxCpltCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_RX_DONE );
 }
 
 void HAL_SUBGHZ_CRCErrorCallback (SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_CRC_ERROR);
 }
 
 void HAL_SUBGHZ_CADStatusCallback(SUBGHZ_HandleTypeDef *hsubghz, HAL_SUBGHZ_CadStatusTypeDef cadstatus)
 {
+    (void) hsubghz;
     switch (cadstatus)
     {
         case HAL_SUBGHZ_CAD_CLEAR:
@@ -1112,31 +1116,37 @@ void HAL_SUBGHZ_CADStatusCallback(SUBGHZ_HandleTypeDef *hsubghz, HAL_SUBGHZ_CadS
 
 void HAL_SUBGHZ_RxTxTimeoutCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_RX_TX_TIMEOUT );
 }
 
 void HAL_SUBGHZ_HeaderErrorCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_HEADER_ERROR );
 }
 
 void HAL_SUBGHZ_PreambleDetectedCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_PREAMBLE_DETECTED );
 }
 
 void HAL_SUBGHZ_SyncWordValidCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_SYNCWORD_VALID );
 }
 
 void HAL_SUBGHZ_HeaderValidCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_HEADER_VALID );
 }
 
 void HAL_SUBGHZ_LrFhssHopCallback(SUBGHZ_HandleTypeDef *hsubghz)
 {
+    (void) hsubghz;
     RadioOnDioIrqCb( IRQ_LR_FHSS_HOP );
 }
 

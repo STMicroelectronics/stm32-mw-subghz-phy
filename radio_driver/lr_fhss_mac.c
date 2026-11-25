@@ -773,7 +773,7 @@ STATIC uint16_t lr_fhss_payload_interleaving( const uint8_t *data_in, uint16_t d
 
     while( bits_left > 0 )
     {
-        int16_t in_row_width = bits_left;
+        uint16_t in_row_width = bits_left;
         if( in_row_width > LR_FHSS_FRAG_BITS )
         {
             in_row_width = LR_FHSS_FRAG_BITS;

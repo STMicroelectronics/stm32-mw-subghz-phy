@@ -313,7 +313,7 @@ int32_t RFW_TransmitLongPacket( uint16_t payload_size, uint32_t timeout,
                 if( total_size > RADIO_BUF_SIZE )
                 {
                     /*cut in chunk*/
-                    if( total_size < RADIO_BUF_SIZE + RFWPacket.Init.CrcFieldSize )
+                    if( total_size < ( uint32_t )( RADIO_BUF_SIZE + RFWPacket.Init.CrcFieldSize ) )
                     {
                         /*reduce chunk so that crc is treated in the next chunk*/
                         chunk_size = RADIO_BUF_SIZE - RFWPacket.Init.PayloadLengthFieldSize - RFWPacket.Init.CrcFieldSize;
@@ -732,6 +732,7 @@ void RFW_SetRadioModem( RadioModems_t Modem )
 #if (RFW_LONGPACKET_ENABLE == 1 )
 static void RFW_TransmitLongPacket_NewTxChunkTimerEvent( void *param )
 {
+    (void) param;
     RFW_TRANSMIT_LONGPACKET_TX_CHUNK_PROCESS();
 }
 
@@ -846,7 +847,7 @@ static void RFW_WhiteRun( RadioFw_t *RFWPacket, uint8_t *Payload, uint32_t Size 
 {
     /*run the whitening algo on Size bytes*/
     uint16_t ibmwhite_state = RFWPacket->WhiteLfsrState;
-    for( int32_t i = 0; i < Size; i++ )
+    for( uint32_t i = 0; i < Size; i++ )
     {
         Payload[i] ^= ibmwhite_state & 0xFF;
         for( int32_t j = 0; j < 8; j++ )
@@ -862,11 +863,10 @@ static int32_t RFW_CrcRun( RadioFw_t *const RFWPacket, const uint8_t *Payload, c
                            uint8_t CrcResult[2] )
 {
     int32_t status = 0;
-    int32_t i = 0;
     uint16_t polynomial = RFWPacket->Init.CrcPolynomial;
     /* Restore state from previous chunk*/
     uint16_t crc = RFWPacket->CrcLfsrState;
-    for( i = 0; i < Size; i++ )
+    for( uint32_t i = 0; i < Size; i++ )
     {
         crc = RFW_CrcRun1Byte( crc, Payload[i], polynomial );
     }
@@ -913,7 +913,7 @@ static int32_t RFW_PollRxBytes( uint32_t bytes )
     uint8_t reg_buff_ptr = reg_buff_ptr_ref;
     uint32_t timeout = DIVC( bytes * 8 * 1000, RFWPacket.BitRate );
     /* Wait that packet length is received */
-    while( ( reg_buff_ptr - reg_buff_ptr_ref ) < bytes )
+    while( ( uint32_t ) ( reg_buff_ptr - reg_buff_ptr_ref ) < bytes )
     {
         /*reading rx address pointer*/
         reg_buff_ptr = SUBGRF_ReadRegister( SUBGHZ_RXADRPTR );
@@ -958,6 +958,7 @@ static int32_t RFW_GetPacketLength( uint16_t *PayloadLength )
 
 static void RFW_GetPayloadTimerEvent( void *context )
 {
+    (void) context;
     RFW_GET_PAYLOAD_PROCESS();
 }
 
