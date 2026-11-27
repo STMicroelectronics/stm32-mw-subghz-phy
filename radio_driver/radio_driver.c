@@ -870,16 +870,7 @@ void SUBGRF_GetRxBufferStatus( uint8_t *payloadLength, uint8_t *rxStartBufferPoi
 
     SUBGRF_ReadCommand( RADIO_GET_RXBUFFERSTATUS, status, 2 );
 
-    // In case of LORA fixed header, the payloadLength is obtained by reading
-    // the register REG_LR_PAYLOADLENGTH
-    if( ( SUBGRF_GetPacketType( ) == PACKET_TYPE_LORA ) && ( LoRaHeaderType == LORA_PACKET_FIXED_LENGTH ) )
-    {
-        *payloadLength = SUBGRF_ReadRegister( REG_LR_PAYLOADLENGTH );
-    }
-    else
-    {
-        *payloadLength = status[0];
-    }
+    *payloadLength = status[0];
     *rxStartBufferPointer = status[1];
 }
 
