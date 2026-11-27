@@ -60,7 +60,7 @@ typedef struct
     uint8_t RadioBufferOffset;         /* Radio buffer offset*/
     uint16_t RxPayloadOffset;          /* RxPayloadOffset buffer offset*/
     void ( *RxLongPacketStoreChunkCb )( uint8_t *buffer, uint8_t buffer_size );
-    void ( *TxLongPacketGetNextChunkCb )( uint8_t **buffer, uint8_t buffer_size );
+    void ( *TxLongPacketGetNextChunkCb )( const uint8_t **buffer, uint8_t buffer_size );
     uint8_t AntSwitchPaSelect;
     uint32_t BitRate;
     TimerEvent_t *RxTimeoutTimer;
@@ -255,7 +255,7 @@ static void RFW_GetPayload( uint8_t Offset, uint8_t Length );
 
 /* Exported functions --------------------------------------------------------*/
 int32_t RFW_TransmitLongPacket( uint16_t payload_size, uint32_t timeout,
-                                void ( *TxLongPacketGetNextChunkCb )( uint8_t **buffer, uint8_t buffer_size ) )
+                                void ( *TxLongPacketGetNextChunkCb )( const uint8_t **buffer, uint8_t buffer_size ) )
 {
     int32_t status = 0;
 #if (RFW_LONGPACKET_ENABLE == 1 )
@@ -273,7 +273,7 @@ int32_t RFW_TransmitLongPacket( uint16_t payload_size, uint32_t timeout,
     else
     {
         /*chunk buffer pointer fed by the application*/
-        uint8_t *app_chunk_buffer_ptr = NULL;
+        const uint8_t *app_chunk_buffer_ptr = NULL;
         /*size of the chunk to be sent*/
         uint8_t chunk_size;
         uint8_t crc_size;
@@ -471,7 +471,7 @@ int32_t RFW_ReceiveLongPacket( uint8_t boosted_mode, uint32_t timeout,
     return status;
 }
 
-int32_t RFW_Init( ConfigGeneric_t *config, RadioEvents_t *RadioEvents, TimerEvent_t *TimeoutTimerEvent )
+int32_t RFW_Init( const ConfigGeneric_t *config, RadioEvents_t *RadioEvents, TimerEvent_t *TimeoutTimerEvent )
 {
 #if (RFW_ENABLE == 1 )
     RADIO_FSK_PacketLengthModes_t HeaderType;
@@ -581,20 +581,20 @@ void RFW_SetAntSwitch( uint8_t AntSwitch )
 #endif /* RFW_ENABLE == 1 */
 }
 
-int32_t RFW_TransmitInit( uint8_t *inOutBuffer, uint8_t size, uint8_t *outSize )
+const uint8_t *RFW_TransmitInit( const uint8_t *inBuffer, uint8_t size, uint8_t *outSize )
 {
-    int32_t status = -1;
+    const uint8_t *result = NULL;
 #if (RFW_ENABLE == 1 )
     uint8_t crc_result[2];
     if( size + RFWPacket.Init.PayloadLengthFieldSize + RFWPacket.Init.CrcFieldSize > RADIO_BUF_SIZE )
     {
         RFW_MW_LOG( TS_ON, VLEVEL_M, "RadioSend Oversize\r\n" );
-        status = -1;
+        result = NULL;
     }
     else
     {
         /* Copy tx buffer in payload*/
-        RADIO_MEMCPY8( &ChunkBuffer[RFWPacket.Init.PayloadLengthFieldSize], inOutBuffer, size );
+        RADIO_MEMCPY8( &ChunkBuffer[RFWPacket.Init.PayloadLengthFieldSize], inBuffer, size );
         /* Calculate the crc on */
         /* Payload Size without the packet length field nor the CRC */
         /* Prepend payload size before Payload*/
@@ -622,15 +622,13 @@ int32_t RFW_TransmitInit( uint8_t *inOutBuffer, uint8_t size, uint8_t *outSize )
         RFW_WhiteRun( &RFWPacket, &ChunkBuffer[0], size + RFWPacket.Init.PayloadLengthFieldSize + RFWPacket.Init.CrcFieldSize );
         /*Configure the Transmitter to send all*/
         *outSize = ( uint8_t ) size + RFWPacket.Init.PayloadLengthFieldSize + RFWPacket.Init.CrcFieldSize;
-        /*copy result*/
-        RADIO_MEMCPY8( inOutBuffer, ChunkBuffer, *outSize );
 
         RFWPacket.LongPacketModeEnable = 0;
 
-        status = 0;
+        result = ChunkBuffer;
     }
 #endif /* RFW_ENABLE == 1 */
-    return status;
+    return result;
 }
 
 int32_t RFW_ReceiveInit( void )
@@ -737,7 +735,7 @@ static void RFW_TransmitLongPacket_NewTxChunkTimerEvent( void *param )
 
 static void RFW_TransmitLongPacket_TxChunkProcess( void )
 {
-    uint8_t *app_chunk_buffer_ptr = NULL;
+    const uint8_t *app_chunk_buffer_ptr = NULL;
     uint8_t chunk_size = 0;
     uint8_t crc_result[2] = {0};
     uint8_t crc_size;

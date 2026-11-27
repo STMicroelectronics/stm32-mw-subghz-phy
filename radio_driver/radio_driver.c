@@ -228,7 +228,7 @@ RadioOperatingModes_t SUBGRF_GetOperatingMode( void )
     return OperatingMode;
 }
 
-void SUBGRF_SetPayload( uint8_t *payload, uint8_t size )
+void SUBGRF_SetPayload( const uint8_t *payload, uint8_t size )
 {
     SUBGRF_WriteBuffer( 0x00, payload, size );
 }
@@ -247,13 +247,13 @@ uint8_t SUBGRF_GetPayload( uint8_t *buffer, uint8_t *size,  uint8_t maxSize )
     return 0;
 }
 
-void SUBGRF_SendPayload( uint8_t *payload, uint8_t size, uint32_t timeout)
+void SUBGRF_SendPayload( const uint8_t *payload, uint8_t size, uint32_t timeout)
 {
     SUBGRF_SetPayload( payload, size );
     SUBGRF_SetTx( timeout );
 }
 
-uint8_t SUBGRF_SetSyncWord( uint8_t *syncWord )
+uint8_t SUBGRF_SetSyncWord( const uint8_t *syncWord )
 {
     SUBGRF_WriteRegisters( REG_LR_SYNCWORDBASEADDRESS, syncWord, 8 );
     return 0;
@@ -691,7 +691,7 @@ void SUBGRF_SetTxParams( uint8_t paSelect, int8_t power, RadioRampTimes_t rampTi
     SUBGRF_WriteCommand(RADIO_SET_TXPARAMS, buf, 2);
 }
 
-void SUBGRF_SetModulationParams( ModulationParams_t *modulationParams )
+void SUBGRF_SetModulationParams( const ModulationParams_t *modulationParams )
 {
     uint8_t n;
     uint32_t tempVal = 0;
@@ -755,7 +755,7 @@ void SUBGRF_SetModulationParams( ModulationParams_t *modulationParams )
     }
 }
 
-void SUBGRF_SetPacketParams( PacketParams_t *packetParams )
+void SUBGRF_SetPacketParams( const PacketParams_t *packetParams )
 {
     uint8_t n;
     uint8_t crcVal = 0;
@@ -965,7 +965,7 @@ uint8_t SUBGRF_ReadRegister( uint16_t addr )
     return data;
 }
 
-void SUBGRF_WriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
+void SUBGRF_WriteRegisters( uint16_t address, const uint8_t *buffer, uint16_t size )
 {
     CRITICAL_SECTION_BEGIN();
     HAL_SUBGHZ_WriteRegisters( &hsubghz, address, buffer, size );
@@ -979,7 +979,7 @@ void SUBGRF_ReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
     CRITICAL_SECTION_END();
 }
 
-void SUBGRF_WriteBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
+void SUBGRF_WriteBuffer( uint8_t offset, const uint8_t *buffer, uint8_t size )
 {
     CRITICAL_SECTION_BEGIN();
     HAL_SUBGHZ_WriteBuffer( &hsubghz, offset, buffer, size );
@@ -993,7 +993,7 @@ void SUBGRF_ReadBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
     CRITICAL_SECTION_END();
 }
 
-void SUBGRF_WriteCommand( SUBGHZ_RadioSetCmd_t Command, uint8_t *pBuffer,
+void SUBGRF_WriteCommand( SUBGHZ_RadioSetCmd_t Command, const uint8_t *pBuffer,
                                         uint16_t Size )
 {
     CRITICAL_SECTION_BEGIN();
