@@ -110,6 +110,16 @@ typedef struct FskBandwidth_s
 #define DCDC_ENABLE                 ( 1UL )
 #endif /* DCDC_ENABLE */
 
+/**
+  * @brief Optional error callback invoked when a HAL_SUBGHZ register access
+  *        function indicates an error communicating with the modem
+  * @note  RADIO_ERROR_CB can be redefined in radio_conf.h; when left undefined
+  *        it expands to an empty statement, i.e. error is ignored
+  */
+#ifndef RADIO_ERROR_CB
+#define RADIO_ERROR_CB()            ( (void) 0 )
+#endif /* RADIO_ERROR_CB */
+
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /*!
@@ -952,7 +962,10 @@ void SUBGRF_ClearIrqStatus( uint16_t irq )
 void SUBGRF_WriteRegister( uint16_t addr, uint8_t data )
 {
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_WriteRegisters( &hsubghz, addr, (uint8_t*)&data, 1 );
+    if( HAL_SUBGHZ_WriteRegisters( &hsubghz, addr, (uint8_t*)&data, 1 ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
 }
 
@@ -960,7 +973,10 @@ uint8_t SUBGRF_ReadRegister( uint16_t addr )
 {
     uint8_t data;
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_ReadRegisters( &hsubghz, addr, &data, 1 );
+    if( HAL_SUBGHZ_ReadRegisters( &hsubghz, addr, &data, 1 ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
     return data;
 }
@@ -968,28 +984,40 @@ uint8_t SUBGRF_ReadRegister( uint16_t addr )
 void SUBGRF_WriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
 {
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_WriteRegisters( &hsubghz, address, buffer, size );
+    if( HAL_SUBGHZ_WriteRegisters( &hsubghz, address, buffer, size ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
 }
 
 void SUBGRF_ReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
 {
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_ReadRegisters( &hsubghz, address, buffer, size );
+    if( HAL_SUBGHZ_ReadRegisters( &hsubghz, address, buffer, size ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
 }
 
 void SUBGRF_WriteBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
 {
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_WriteBuffer( &hsubghz, offset, buffer, size );
+    if( HAL_SUBGHZ_WriteBuffer( &hsubghz, offset, buffer, size ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
 }
 
 void SUBGRF_ReadBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
 {
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_ReadBuffer( &hsubghz, offset, buffer, size );
+    if( HAL_SUBGHZ_ReadBuffer( &hsubghz, offset, buffer, size ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
 }
 
@@ -997,7 +1025,10 @@ void SUBGRF_WriteCommand( SUBGHZ_RadioSetCmd_t Command, uint8_t *pBuffer,
                                         uint16_t Size )
 {
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_ExecSetCmd( &hsubghz, Command, pBuffer, Size );
+    if( HAL_SUBGHZ_ExecSetCmd( &hsubghz, Command, pBuffer, Size ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
 }
 
@@ -1005,7 +1036,10 @@ void SUBGRF_ReadCommand( SUBGHZ_RadioGetCmd_t Command, uint8_t *pBuffer,
                                         uint16_t Size )
 {
     CRITICAL_SECTION_BEGIN();
-    HAL_SUBGHZ_ExecGetCmd( &hsubghz, Command, pBuffer, Size );
+    if( HAL_SUBGHZ_ExecGetCmd( &hsubghz, Command, pBuffer, Size ) != HAL_OK )
+    {
+        RADIO_ERROR_CB();
+    }
     CRITICAL_SECTION_END();
 }
 
